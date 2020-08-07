@@ -61,6 +61,7 @@ namespace CatjiApi.Models
         public ICollection<Reportblog> Reportblog { get; set; }
         public ICollection<Reportvideo> Reportvideo { get; set; }
         public ICollection<Searchhistory> Searchhistory { get; set; }
+        //[Newtonsoft.Json.JsonIgnore]
         public ICollection<Video> Video { get; set; }
         public ICollection<Videocomment> Videocomment { get; set; }
         public ICollection<Watchhistory> Watchhistory { get; set; }

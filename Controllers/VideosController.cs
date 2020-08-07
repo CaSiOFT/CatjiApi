@@ -93,7 +93,8 @@ namespace CatjiApi.Controllers
             _context.Video.Add(video);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetVideo", new { id = video.Vid }, video);
+            CreatedAtAction("GetVideo", new { id = video.Vid }, video);
+            return Ok(video.Vid);
         }
 
         // DELETE: api/Videos/5

@@ -10,11 +10,30 @@ namespace CatjiApi.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+
+        public class Test
+        {
+            public Test(int i)
+            {
+                x1 = i;
+            }
+            public int x1 = 10;
+            public decimal x2 = 3.1415926M;
+            public string x3 = "Hello World!";
+        }
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
             return new string[] { "value1", "value2" };
+        }
+
+        // GET api/values/test
+        [HttpGet("test")]
+        public ActionResult<IEnumerable<Test>> Get2()
+        {
+            //return new string[] { "value1", "value2" };
+            return new Test[] { new Test(1), new Test(2) };
         }
 
         // GET api/values/5
