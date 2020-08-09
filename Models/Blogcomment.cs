@@ -18,6 +18,7 @@ namespace CatjiApi.Models
         public int? ReplyBcid { get; set; }
         public DateTime CreateTime { get; set; }
         public int LikeNum { get; set; }
+        public int? ParentBcid { get; set; }
 
         public Blog B { get; set; }
         public Blogcomment ReplyBc { get; set; }

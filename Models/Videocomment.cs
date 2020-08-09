@@ -18,6 +18,7 @@ namespace CatjiApi.Models
         public int? ReplyVcid { get; set; }
         public DateTime CreateTime { get; set; }
         public int LikeNum { get; set; }
+        public int? ParentVcid { get; set; }
 
         public Videocomment ReplyVc { get; set; }
         public Users Us { get; set; }

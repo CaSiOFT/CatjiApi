@@ -18,6 +18,7 @@ namespace CatjiApi.Models
         public DateTime CreateTime { get; set; }
         public int LikeNum { get; set; }
         public decimal? IsPublic { get; set; }
+        public int CommentNum { get; set; }
 
         public Users Us { get; set; }
         public ICollection<Blogcomment> Blogcomment { get; set; }

@@ -27,6 +27,7 @@ namespace CatjiApi.Models
         public int FavoriteNum { get; set; }
         public int WatchNum { get; set; }
         public decimal? IsBanned { get; set; }
+        public int CommentNum { get; set; }
 
         public Users Us { get; set; }
         public ICollection<Favorite> Favorite { get; set; }

@@ -150,6 +150,10 @@ namespace CatjiApi.Models
                     .HasColumnName("BID")
                     .HasColumnType("NUMBER(8)");
 
+                entity.Property(e => e.CommentNum)
+                    .HasColumnName("COMMENT_NUM")
+                    .HasDefaultValueSql("0 ");
+
                 entity.Property(e => e.Content)
                     .HasColumnName("CONTENT")
                     .HasColumnType("VARCHAR2(4000)");
@@ -193,7 +197,8 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Bid)
                     .HasColumnName("BID")
-                    .HasColumnType("NUMBER(8)");
+                    .HasColumnType("NUMBER(8)")
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Content)
                     .IsRequired()
@@ -207,6 +212,8 @@ namespace CatjiApi.Models
                 entity.Property(e => e.LikeNum)
                     .HasColumnName("LIKE_NUM")
                     .HasDefaultValueSql("0 ");
+
+                entity.Property(e => e.ParentBcid).HasColumnName("PARENT_BCID");
 
                 entity.Property(e => e.ReplyBcid).HasColumnName("REPLY_BCID");
 
@@ -770,6 +777,10 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vid).HasColumnName("VID");
 
+                entity.Property(e => e.CommentNum)
+                    .HasColumnName("COMMENT_NUM")
+                    .HasDefaultValueSql("0 ");
+
                 entity.Property(e => e.Cover)
                     .HasColumnName("COVER")
                     .HasColumnType("VARCHAR2(256)");
@@ -847,13 +858,17 @@ namespace CatjiApi.Models
                     .HasColumnName("LIKE_NUM")
                     .HasDefaultValueSql("0 ");
 
+                entity.Property(e => e.ParentVcid).HasColumnName("PARENT_VCID");
+
                 entity.Property(e => e.ReplyVcid).HasColumnName("REPLY_VCID");
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
                     .HasColumnType("NUMBER(8)");
 
-                entity.Property(e => e.Vid).HasColumnName("VID");
+                entity.Property(e => e.Vid)
+                    .HasColumnName("VID")
+                    .ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.ReplyVc)
                     .WithMany(p => p.InverseReplyVc)
