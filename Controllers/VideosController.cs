@@ -20,6 +20,60 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+
+        [HttpGet("info")]
+        public async Task<IActionResult> GetVideoInfo(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var video = await _context.Video.FindAsync(id);
+
+            if (video == null)
+            {
+                return NotFound();
+            }
+
+            var tags = _context.Videotag
+                .Where(x => x.Vid == video.Vid)
+                .Join(_context.Tag, x => x.TagId, y => y.TagId, (x, y) => new
+                {
+                    name = y.Name,
+                    tag_id = x.TagId
+                });
+
+            var user = _context.Users.SingleOrDefault(x => x.Usid == video.Usid);
+
+            var result = new
+            {
+                vid = video.Vid,
+                titl = video.Title,
+                desc = video.Description,
+                cover = video.Cover,
+                view_num = video.WatchNum,
+                comment_num = video.CommentNum,
+                upload_time = video.CreateTime,
+                url = video.Path,
+                like_num = video.LikeNum,
+                favorite_num = video.FavoriteNum,
+                share_num = video.FavoriteNum,
+                tags = tags,
+                up = new
+                {
+                    usid = user.Usid,
+                    name = user.Nickname,
+                    desc = user.Signature,
+                    follow_num = user.FollowerNum,
+                    avatar = user.Avatar
+                }
+            };
+
+
+            return Ok(result);
+        }
+
         // GET: api/Videos
         [HttpGet]
         public IEnumerable<Video> GetVideo()
