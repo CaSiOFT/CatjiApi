@@ -44,7 +44,7 @@ namespace CatjiApi.Controllers
                     tag_id = x.TagId
                 });
 
-            var user = _context.Users.SingleOrDefault(x => x.Usid == video.Usid);
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.Usid == video.Usid);
 
             var result = new
             {
