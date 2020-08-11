@@ -20,6 +20,59 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpGet("comment")]
+        public async Task<IActionResult> GetVideoComment(int vid, int offset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var comments = _context.Videocomment.Where(vc => vc.Vid == vid).Skip(offset).Take(10);
+
+            foreach (var comment in comments)
+            {
+                comment.InverseReplyVc = await _context.Videocomment.Where(vc => comment.Vcid == vc.ParentVcid).ToListAsync();
+                foreach (var irv in comment.InverseReplyVc)
+                {
+                    irv.Us = await _context.Users.FindAsync(irv.Usid);
+                }
+            }
+
+            foreach (var comment in comments)
+            {
+                comment.Us = await _context.Users.FindAsync(comment.Usid);
+            }
+
+            var result = comments.Select(x => new
+            {
+                vcid = x.Vcid,
+                content = x.Content,
+                user = new
+                {
+                    usid = x.Us.Usid,
+                    name = x.Us.Nickname,
+                    avatar = x.Us.Avatar
+                },
+                like_num = x.LikeNum,
+                create_time = x.CreateTime,
+                replys = x.InverseReplyVc.Select(irv => new
+                {
+                    vcid = irv.Vcid,
+                    content = irv.Content,
+                    user = new
+                    {
+                        usid = irv.Us.Usid,
+                        name = irv.Us.Nickname,
+                        avatar = irv.Us.Avatar
+                    },
+                    like_num = irv.LikeNum,
+                    create_time = irv.CreateTime
+                })
+            });
+
+            return Ok(result);
+        }
 
         [HttpGet("info")]
         public async Task<IActionResult> GetVideoInfo(int id)
