@@ -20,6 +20,19 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpGet("content")]
+        public async Task<IActionResult> GetSearchhistories(int usid)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var searchhistory = _context.Searchhistory.Where(x => x.Usid == usid).OrderByDescending(x => x.CreateTime).Take(10).Select(x => x.Content);
+
+            return Ok(searchhistory);
+        }
+
         // GET: api/Searchhistories
         [HttpGet]
         public IEnumerable<Searchhistory> GetSearchhistory()

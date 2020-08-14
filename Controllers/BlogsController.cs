@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace CatjiApi.Controllers
 {
