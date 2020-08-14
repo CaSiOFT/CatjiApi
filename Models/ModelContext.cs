@@ -19,6 +19,7 @@ namespace CatjiApi.Models
         public virtual DbSet<Block> Block { get; set; }
         public virtual DbSet<Blog> Blog { get; set; }
         public virtual DbSet<Blogcomment> Blogcomment { get; set; }
+        public virtual DbSet<Blogimage> Blogimage { get; set; }
         public virtual DbSet<Cat> Cat { get; set; }
         public virtual DbSet<Favorite> Favorite { get; set; }
         public virtual DbSet<Follow> Follow { get; set; }
@@ -198,7 +199,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.Bid)
                     .HasColumnName("BID")
                     .HasColumnType("NUMBER(8)");
-//                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Content)
                     .IsRequired()
@@ -237,6 +238,31 @@ namespace CatjiApi.Models
                     .HasForeignKey(d => d.Usid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("BLOGCOMMENT_USER_FK");
+            });
+
+            modelBuilder.Entity<Blogimage>(entity =>
+            {
+                entity.HasKey(e => new { e.ImgUrl, e.Bid });
+
+                entity.ToTable("BLOGIMAGE");
+
+                entity.HasIndex(e => new { e.ImgUrl, e.Bid })
+                    .HasName("BLOGIMAGE_PK")
+                    .IsUnique();
+
+                entity.Property(e => e.ImgUrl)
+                    .HasColumnName("IMG_URL")
+                    .HasColumnType("VARCHAR2(256)");
+
+                entity.Property(e => e.Bid)
+                    .HasColumnName("BID")
+                    .HasColumnType("NUMBER(8)");
+
+                entity.HasOne(d => d.B)
+                    .WithMany(p => p.Blogimage)
+                    .HasForeignKey(d => d.Bid)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("BLOGIMAGE_BLOG_BID_FK");
             });
 
             modelBuilder.Entity<Cat>(entity =>
@@ -290,7 +316,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vid)
                     .HasColumnName("VID");
-//                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Favorite)
@@ -322,7 +348,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.FollowUsid)
                     .HasColumnName("FOLLOW_USID")
                     .HasColumnType("NUMBER(8)");
-//                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.FollowUs)
                     .WithMany(p => p.FollowFollowUs)
@@ -353,7 +379,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Bid)
                     .HasColumnName("BID");
-//                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.B)
                     .WithMany(p => p.Likeblog)
@@ -385,7 +411,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.Bcid)
                     .HasColumnName("BCID")
                     .HasColumnType("NUMBER(8)");
-//                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Bc)
                     .WithMany(p => p.Likeblogcomment)
@@ -416,7 +442,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vid)
                     .HasColumnName("VID");
-//                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Likevideo)
@@ -447,7 +473,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vcid)
                     .HasColumnName("VCID");
-//                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Likevideocomment)
@@ -868,7 +894,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vid)
                     .HasColumnName("VID");
-//                    .ValueGeneratedOnAdd();
+                    //.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.ReplyVc)
                     .WithMany(p => p.InverseReplyVc)
