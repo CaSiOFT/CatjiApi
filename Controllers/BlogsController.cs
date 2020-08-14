@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace CatjiApi.Controllers
 {
@@ -18,6 +19,48 @@ namespace CatjiApi.Controllers
         public BlogsController(ModelContext context)
         {
             _context = context;
+        }
+
+        [HttpGet("content")]
+        public async Task<IActionResult> GetBlog(int usid, int offset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var followedUsid = _context.Follow.Where(x => x.Usid == usid).Select(x => x.FollowUsid).ToList();
+            followedUsid.Add(usid);
+
+            var blogs = _context.Blog.Where(x => followedUsid.Contains(x.Usid)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
+
+            foreach (var blog in blogs)
+            {
+                blog.Us = await _context.Users.FindAsync(blog.Usid);
+                blog.Blogimage = _context.Blogimage.Where(x => x.Bid == blog.Bid).ToList();
+            }
+
+            var result = blogs.Select(x => new
+            {
+                bid = x.Bid,
+                time = x.CreateTime,
+                content = x.Content,
+                up = new
+                {
+                    usid = x.Us.Usid,
+                    name = x.Us.Nickname,
+                    avatar = x.Us.Avatar
+                },
+                transmit_num = x.TransmitNum,
+                comment_num = x.CommentNum,
+                like_num = x.LikeNum,
+                images = x.Blogimage.Select(y => new
+                {
+                    url = y.ImgUrl
+                })
+            });
+
+            return Ok(result);
         }
 
         // GET: api/Blogs

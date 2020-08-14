@@ -20,6 +20,7 @@ namespace CatjiApi.Models
         public int LikeNum { get; set; }
         public decimal? IsPublic { get; set; }
         public int CommentNum { get; set; }
+        public int TransmitNum { get; set; }
 
         public Users Us { get; set; }
         public ICollection<Blogcomment> Blogcomment { get; set; }
