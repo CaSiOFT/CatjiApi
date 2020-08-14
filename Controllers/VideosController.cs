@@ -28,7 +28,7 @@ namespace CatjiApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var comments = _context.Videocomment.Where(vc => vc.Vid == vid).Skip(offset).Take(10);
+            var comments = _context.Videocomment.Where(vc => vc.Vid == vid).OrderBy(x => x.CreateTime).Skip(offset).Take(10);
 
             foreach (var comment in comments)
             {
@@ -97,7 +97,7 @@ namespace CatjiApi.Controllers
                     tag_id = x.TagId
                 });
 
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.Usid == video.Usid);
+            var user = await _context.Users.FindAsync(video.Usid);
 
             var result = new
             {
