@@ -50,7 +50,14 @@ namespace CatjiApi.Controllers
             var identityPrincipal = new ClaimsPrincipal(identity);
 
             //登录
-            await HttpContext.SignInAsync("Cookies", identityPrincipal);
+            await HttpContext.SignInAsync("Cookies", identityPrincipal
+                //, new AuthenticationProperties
+                //{
+                //    ExpiresUtc = DateTime.UtcNow.AddMinutes(30),
+                //    IsPersistent = false,
+                //    AllowRefresh = false
+                //}
+                );
             return Ok(new { });
         }
 
