@@ -28,7 +28,7 @@ namespace CatjiApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var followedUsid = _context.Follow.Where(x => x.Usid == usid).Select(x => x.FollowUsid).ToList();
+            var followedUsid = await _context.Follow.Where(x => x.Usid == usid).Select(x => x.FollowUsid).ToListAsync();
             followedUsid.Add(usid);
 
             var blogs = _context.Blog.Where(x => followedUsid.Contains(x.Usid)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
@@ -36,7 +36,7 @@ namespace CatjiApi.Controllers
             foreach (var blog in blogs)
             {
                 blog.Us = await _context.Users.FindAsync(blog.Usid);
-                blog.Blogimage = _context.Blogimage.Where(x => x.Bid == blog.Bid).ToList();
+                blog.Blogimage = await _context.Blogimage.Where(x => x.Bid == blog.Bid).ToListAsync();
             }
 
             var result = blogs.Select(x => new
