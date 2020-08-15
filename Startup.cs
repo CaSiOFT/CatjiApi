@@ -29,6 +29,10 @@ namespace CatjiApi
         {
             services.AddDbContext<ModelContext>(opt => opt.UseOracle("Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;"));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddAuthentication("Cookies").AddCookie("Cookies", o =>
+            {
+                o.SlidingExpiration = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,6 +46,9 @@ namespace CatjiApi
             {
                 app.UseHsts();
             }
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+            app.UseAuthentication();
 
             app.UseHttpsRedirection();
             app.UseMvc();

@@ -6,11 +6,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace CatjiApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly ModelContext _context;
@@ -18,6 +23,69 @@ namespace CatjiApi.Controllers
         public UsersController(ModelContext context)
         {
             _context = context;
+        }
+
+        public class User
+        {
+            public int usid;
+        }
+
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(User user)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.Name, user.usid.ToString())
+            };
+
+            //使用证件单元创建一张身份证
+            var identity = new ClaimsIdentity(claims, "Cookies");
+
+            //使用身份证创建一个证件当事人
+            var identityPrincipal = new ClaimsPrincipal(identity);
+
+            //登录
+            await HttpContext.SignInAsync("Cookies", identityPrincipal);
+            return Ok(new { });
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+            return Ok(new { });
+        }
+
+        [HttpGet("info")]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var auth = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (!auth.Succeeded)
+            {
+                return BadRequest();
+            }
+
+            int usid;
+            bool bo1 = int.TryParse(auth.Principal.Identity.Name, out usid);
+
+            var users = await _context.Users.FindAsync(usid);
+
+            if (users == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(users);
         }
 
         // GET: api/Users
