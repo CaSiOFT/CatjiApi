@@ -54,7 +54,7 @@ namespace CatjiApi.Controllers
             user0.Email = user.email;
             user0.Password = user.password;
             user0.CreateTime = DateTime.Now;
-            user0.ChangedTime = DateTime.Now;
+            user0.ChangedTime = user0.CreateTime;
 
             _context.Users.Add(user0);
             await _context.SaveChangesAsync();

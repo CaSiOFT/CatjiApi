@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CatjiApi.Models;
 
+//Scaffold-DbContext "Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;" Oracle.EntityFrameworkCore -outputdir Models -f
+
 namespace CatjiApi
 {
     public class Startup

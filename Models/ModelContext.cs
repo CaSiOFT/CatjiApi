@@ -203,7 +203,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.Bid)
                     .HasColumnName("BID")
                     .HasColumnType("NUMBER(8)")
-                    ;//                    .ValueGeneratedOnAdd();
+                    ;//.ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Content)
                     .IsRequired()
@@ -320,7 +320,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vid)
                     .HasColumnName("VID")
-                    ;//                    .ValueGeneratedOnAdd();
+                    ;//.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Favorite)
@@ -352,7 +352,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.FollowUsid)
                     .HasColumnName("FOLLOW_USID")
                     .HasColumnType("NUMBER(8)")
-                    ;//                    .ValueGeneratedOnAdd();
+                    ;//.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.FollowUs)
                     .WithMany(p => p.FollowFollowUs)
@@ -383,7 +383,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Bid)
                     .HasColumnName("BID")
-                    ;//                    .ValueGeneratedOnAdd();
+                    ;//.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.B)
                     .WithMany(p => p.Likeblog)
@@ -415,7 +415,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.Bcid)
                     .HasColumnName("BCID")
                     .HasColumnType("NUMBER(8)")
-                    ;//                    .ValueGeneratedOnAdd();
+                    ;//.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Bc)
                     .WithMany(p => p.Likeblogcomment)
@@ -446,7 +446,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vid)
                     .HasColumnName("VID")
-                    ;//                    .ValueGeneratedOnAdd();
+                    ;//.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Likevideo)
@@ -477,7 +477,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vcid)
                     .HasColumnName("VCID")
-                    ;//                    .ValueGeneratedOnAdd();
+                    ;//.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Likevideocomment)
@@ -746,6 +746,10 @@ namespace CatjiApi.Models
                     .HasColumnName("CAT_ID")
                     .HasColumnType("NUMBER(6)");
 
+                entity.Property(e => e.ChangedTime)
+                    .HasColumnName("CHANGED_TIME")
+                    .HasColumnType("DATE");
+
                 entity.Property(e => e.CreateTime)
                     .HasColumnName("CREATE_TIME")
                     .HasColumnType("DATE");
@@ -765,7 +769,8 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.IsBanned)
                     .HasColumnName("IS_BANNED")
-                    .HasColumnType("NUMBER");
+                    .HasColumnType("NUMBER")
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.Nickname)
                     .IsRequired()
@@ -898,7 +903,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Vid)
                     .HasColumnName("VID")
-                    ;//                    .ValueGeneratedOnAdd();
+                    ;//.ValueGeneratedOnAdd();
 
                 entity.HasOne(d => d.ReplyVc)
                     .WithMany(p => p.InverseReplyVc)
