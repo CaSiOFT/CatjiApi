@@ -28,19 +28,40 @@ namespace CatjiApi.Controllers
         public class User
         {
             public int usid;
+            public string nickname;
+            public string password;
+            public string email;
+            public string phone;
         }
 
         [AllowAnonymous]
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(User user)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(User user)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            var users = _context.Users.Where(x => user.phone != null && x.Tel == user.phone || user.email != null && x.Email == user.email || x.Nickname == user.nickname);
+
+            if (users.Count() != 0)
+                return BadRequest();
+
+            var user0 = new Users();
+            user0.Nickname = user.nickname;
+            user0.Tel = user.phone;
+            user0.Email = user.email;
+            user0.Password = user.password;
+            user0.CreateTime = DateTime.Now;
+            user0.ChangedTime = DateTime.Now;
+
+            _context.Users.Add(user0);
+            await _context.SaveChangesAsync();
+
             var claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.Name, user.usid.ToString())
+                new Claim(ClaimTypes.Name, user0.Usid.ToString()),
             };
 
             //使用证件单元创建一张身份证
@@ -51,12 +72,55 @@ namespace CatjiApi.Controllers
 
             //登录
             await HttpContext.SignInAsync("Cookies", identityPrincipal
-                //, new AuthenticationProperties
-                //{
-                //    ExpiresUtc = DateTime.UtcNow.AddMinutes(30),
-                //    IsPersistent = false,
-                //    AllowRefresh = false
-                //}
+                , new AuthenticationProperties
+                {
+                    //ExpiresUtc = DateTime.UtcNow.AddDays(1),
+                    IsPersistent = true,
+                    AllowRefresh = true
+                }
+                );
+            return Ok(new { });
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(User user)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user0 = await _context.Users.FindAsync(user.usid);
+
+            if (user0 == null)
+            {
+                return NotFound();
+            }
+
+            if (user0.Password != user.password)
+                return BadRequest();
+
+            var claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.Name, user.usid.ToString()),
+            };
+
+            //使用证件单元创建一张身份证
+            var identity = new ClaimsIdentity(claims, "Cookies");
+
+            //使用身份证创建一个证件当事人
+            var identityPrincipal = new ClaimsPrincipal(identity);
+
+            //登录
+            await HttpContext.SignInAsync("Cookies", identityPrincipal
+                , new AuthenticationProperties
+                {
+                    //ExpiresUtc = DateTime.UtcNow.AddDays(1),
+                    IsPersistent = true,
+                    AllowRefresh = true
+                }
                 );
             return Ok(new { });
         }

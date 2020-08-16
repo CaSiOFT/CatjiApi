@@ -32,6 +32,7 @@ namespace CatjiApi
             services.AddAuthentication("Cookies").AddCookie("Cookies", o =>
             {
                 o.SlidingExpiration = true;
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             });
         }
 
