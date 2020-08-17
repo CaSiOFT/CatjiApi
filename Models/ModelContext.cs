@@ -905,6 +905,11 @@ namespace CatjiApi.Models
                     .HasColumnName("VID")
                     ;//.ValueGeneratedOnAdd();
 
+                entity.HasOne(d => d.ParentVc)
+                    .WithMany(p => p.InverseParentVc)
+                    .HasForeignKey(d => d.ParentVcid)
+                    .HasConstraintName("VIDEOCOMMENT_VIDEOCOMMENT_VCID_FK");
+
                 entity.HasOne(d => d.ReplyVc)
                     .WithMany(p => p.InverseReplyVc)
                     .HasForeignKey(d => d.ReplyVcid)

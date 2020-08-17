@@ -32,8 +32,8 @@ namespace CatjiApi.Controllers
 
             foreach (var comment in comments)
             {
-                comment.InverseReplyVc = await _context.Videocomment.Where(vc => comment.Vcid == vc.ParentVcid).ToListAsync();
-                foreach (var irv in comment.InverseReplyVc)
+                comment.InverseParentVc = await _context.Videocomment.Where(vc => comment.Vcid == vc.ParentVcid).ToListAsync();
+                foreach (var irv in comment.InverseParentVc)
                 {
                     irv.Us = await _context.Users.FindAsync(irv.Usid);
                 }
@@ -56,7 +56,7 @@ namespace CatjiApi.Controllers
                 },
                 like_num = x.LikeNum,
                 create_time = x.CreateTime,
-                replys = x.InverseReplyVc.Select(irv => new
+                replys = x.InverseParentVc.Select(irv => new
                 {
                     vcid = irv.Vcid,
                     content = irv.Content,
