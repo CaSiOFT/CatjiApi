@@ -28,7 +28,7 @@ namespace CatjiApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var searchhistory = _context.Searchhistory.Where(x => x.Usid == usid).OrderByDescending(x => x.CreateTime).Take(10).Select(x => x.Content);
+            var searchhistory = await _context.Searchhistory.Where(x => x.Usid == usid).OrderByDescending(x => x.CreateTime).Take(10).Select(x => x.Content).ToListAsync();
 
             return Ok(searchhistory);
         }
