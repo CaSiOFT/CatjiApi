@@ -7,6 +7,7 @@ namespace CatjiApi.Models
     {
         public Blogcomment()
         {
+            InverseParentBc = new HashSet<Blogcomment>();
             InverseReplyBc = new HashSet<Blogcomment>();
             Likeblogcomment = new HashSet<Likeblogcomment>();
         }
@@ -21,8 +22,10 @@ namespace CatjiApi.Models
         public int? ParentBcid { get; set; }
 
         public Blog B { get; set; }
+        public Blogcomment ParentBc { get; set; }
         public Blogcomment ReplyBc { get; set; }
         public Users Us { get; set; }
+        public ICollection<Blogcomment> InverseParentBc { get; set; }
         public ICollection<Blogcomment> InverseReplyBc { get; set; }
         public ICollection<Likeblogcomment> Likeblogcomment { get; set; }
     }

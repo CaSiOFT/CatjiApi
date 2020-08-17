@@ -232,6 +232,12 @@ namespace CatjiApi.Models
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("BLOGCOMMENT_BLOG_FK");
 
+                entity.HasOne(d => d.ParentBc)
+                    .WithMany(p => p.InverseParentBc)
+                    .HasForeignKey(d => d.ParentBcid)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("BLOGCOMMENT_BLOGCOMMENT_BCID_FK");
+
                 entity.HasOne(d => d.ReplyBc)
                     .WithMany(p => p.InverseReplyBc)
                     .HasForeignKey(d => d.ReplyBcid)
