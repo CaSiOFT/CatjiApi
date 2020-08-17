@@ -62,6 +62,7 @@ namespace CatjiApi.Controllers
             var claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, user0.Usid.ToString()),
+                new Claim("LastChanged", user0.ChangedTime.ToString())
             };
 
             //使用证件单元创建一张身份证
@@ -105,6 +106,7 @@ namespace CatjiApi.Controllers
             var claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, user.usid.ToString()),
+                new Claim("LastChanged", user0.ChangedTime.ToString())
             };
 
             //使用证件单元创建一张身份证
