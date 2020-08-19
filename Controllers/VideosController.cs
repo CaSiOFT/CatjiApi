@@ -126,6 +126,39 @@ namespace CatjiApi.Controllers
 
             return Ok(result);
         }
+        // GET: api/Videos/top
+        [HttpGet("top")]
+        public async Task<IActionResult> GetVTop()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var video_top = _context.Video.OrderByDescending(x => x.CommentNum + x.FavoriteNum * 2 + x.LikeNum + x.WatchNum).Take(10);
+            //
+
+
+
+            foreach (var vt in video_top)
+            {
+                vt.Us = await _context.Users.FindAsync(vt.Usid);
+                //有些用户没有猫咪  没想好怎么搞
+                //if(vt.Us.CatId!=null)//vt.Cat = await _context.Cat.FindAsync(vt.Us.CatId);
+            }
+            
+
+            var result = video_top.Select(x => new
+            {
+                v_title = x.Title,
+                v_user = x.Us.Nickname,
+                //v_cat=x.Cat.Name
+            }) ;
+
+            return Ok(result);
+        }
+
+
         // GET: api/Videos/info
         [HttpGet("info")]
         public async Task<IActionResult> GetVideoInfo(int id)

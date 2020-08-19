@@ -30,6 +30,7 @@ namespace CatjiApi.Models
         public int CommentNum { get; set; }
 
         public Users Us { get; set; }
+        //public Cat Cat { get; set; }
         public ICollection<Favorite> Favorite { get; set; }
         public ICollection<Likevideo> Likevideo { get; set; }
         public ICollection<Reportvideo> Reportvideo { get; set; }
