@@ -137,3 +137,30 @@ namespace CatjiApi.Controllers
         }
     }
 }
+//GET:api/user/followers
+[HttpGet("followers")]
+public async Task<IActionResult> GetVfollowers()
+{
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
+    var user_follower = await _context.User.FindAsync(FollowerNum);
+    if (user_follower = null)
+    {
+        return NotFound();
+    }
+    var followerid = await _context.Follow.FindAsync(FollowUsid);
+    var user_followers = _context.User.where(x => x.Usid == followerid);
+    var result = user_followers.Select(x => new
+    {
+        v_Usid = x.Usid,
+        v_Nickname = x.Nickname,
+        v_Signature = x.Signature,
+        v_Avatar = x.Avatar
+    });
+
+    
+
+    return Ok(result);
+}
