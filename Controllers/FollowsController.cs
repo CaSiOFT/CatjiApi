@@ -153,7 +153,11 @@ public async Task<IActionResult> GetVfollowers()
         return NotFound();
     }
     var followerid = await _context.Follow.FindAsync(FollowUsid);
+<<<<<<< Updated upstream
     var user_followers = _context.User.where(x => x.Usid == followerid);
+=======
+    var user_followers = _context.User.where(x => x.Usid == followerid).Skip(offset);
+>>>>>>> Stashed changes
     var result = user_followers.Select(x => new
     {
         v_Usid = x.Usid,
@@ -166,3 +170,28 @@ public async Task<IActionResult> GetVfollowers()
 
     return Ok(result);
 }
+<<<<<<< Updated upstream
+=======
+public async Task<IActionResult> GetVfollowings()
+{
+    if(!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
+    var user_followings = await _context.User.FindAsync(FollowerNum);
+    if(user_followings =null)
+    {
+        return NotFound();
+    }
+    var followingid = await _context.Follow.FindAsync(Usid);
+    var user_following = _context.User.where(x => x.FollowUsid == followingid).Skip(offset);
+    var result = user_following.Select(x => new
+    {
+        v_Usid = x.Usid,
+        v_Nickname = x.Nickname,
+        v_Signature = x.Signature,
+        v_Avatar = x.Avatar
+    });
+    return Ok(result);
+}
+>>>>>>> Stashed changes
