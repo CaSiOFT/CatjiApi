@@ -136,7 +136,9 @@ namespace CatjiApi.Controllers
             return _context.Follow.Any(e => e.Usid == id);
         }
     }
+
 }
+
 //GET:api/user/followers
 [HttpGet("followers")]
 public async Task<IActionResult> GetVfollowers()
@@ -160,7 +162,7 @@ public async Task<IActionResult> GetVfollowers()
         v_Avatar = x.Avatar
     });
 
-    
+
 
     return Ok(result);
 }

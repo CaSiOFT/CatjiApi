@@ -126,7 +126,28 @@ namespace CatjiApi.Controllers
                 );
             return Ok(new { });
         }
+        // GET: api/Users/top
+        [AllowAnonymous]
+        [HttpGet("top")]
+        public async Task<IActionResult> GetUTop()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            var user_top = _context.Users.OrderByDescending(x => x.FollowerNum + x.Video.Count()).Take(10);
+            
+ 
+            var result = user_top.Select(x => new
+            {
+                u_id = x.Usid,
+                u_pic = x.Avatar,
+                u_name = x.Nickname
+            }); ;
 
+            return Ok(result);
+        }
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {

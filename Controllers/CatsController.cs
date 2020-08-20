@@ -45,7 +45,26 @@ namespace CatjiApi.Controllers
 
             return Ok(cat);
         }
+        // GET: api/Cats/top
+        [HttpGet("top")]
+        public async Task<IActionResult> GetCTop()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
+            var cat_top = _context.Cat.Take(10);
+
+            var result = cat_top.Select(x => new
+            {
+                c_id=x.CatId,
+                c_p=x.Banner,
+                c_t=x.Name
+            });
+
+            return Ok(result);
+        }
         // PUT: api/Cats/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCat([FromRoute] int id, [FromBody] Cat cat)
