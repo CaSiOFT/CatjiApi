@@ -153,24 +153,21 @@ namespace CatjiApi.Controllers
             }
 
             var video_top = _context.Video.OrderByDescending(x => x.CommentNum + x.FavoriteNum * 2 + x.LikeNum + x.WatchNum).Take(10);
-            //
-
-
 
             foreach (var vt in video_top)
             {
                 vt.Us = await _context.Users.FindAsync(vt.Usid);
-                //有些用户没有猫咪  没想好怎么搞
                 //if(vt.Us.CatId!=null)//vt.Cat = await _context.Cat.FindAsync(vt.Us.CatId);
             }
-            
 
             var result = video_top.Select(x => new
             {
+                v_id = x.Vid,
                 v_title = x.Title,
                 v_user = x.Us.Nickname,
-                //v_cat=x.Cat.Name
-            }) ;
+                v_user_avatar = x.Us.Avatar,
+                v_cover = x.Cover
+            });
 
             return Ok(result);
         }

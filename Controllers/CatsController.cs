@@ -54,13 +54,20 @@ namespace CatjiApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var cat_top = _context.Cat.Take(10);
+            var catList = await _context.Cat.ToListAsync();
+
+            var rndList = Tools.RandomList(10, catList.Count);
+
+            List<Cat> cat_top = new List<Cat>();
+
+            foreach (var v in rndList)
+                cat_top.Add(catList[v]);
 
             var result = cat_top.Select(x => new
             {
-                c_id=x.CatId,
-                c_p=x.Banner,
-                c_t=x.Name
+                c_id = x.CatId,
+                c_p = x.Banner,
+                c_t = x.Name
             });
 
             return Ok(result);

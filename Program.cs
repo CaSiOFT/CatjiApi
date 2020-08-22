@@ -21,4 +21,21 @@ namespace CatjiApi
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>();
     }
+
+    public class Tools
+    {
+        public static List<int> RandomList(int num, int max)
+        {
+            var rnd = new Random();
+            var result = new List<int>();
+            int i;
+            while (result.Count < (num < max ? num : max))
+            {
+                i = rnd.Next(max);
+                if (!result.Contains(i))
+                    result.Add(i);
+            }
+            return result;
+        }
+    }
 }
