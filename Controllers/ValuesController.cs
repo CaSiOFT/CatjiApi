@@ -1,15 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatjiApi.Controllers
 {
+    [Produces("application/json")]
+    [Consumes("application/json", "multipart/form-data")]
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        [HttpPost("upload")]
+        public async Task<IActionResult> PostTest(IFormCollection files)
+        {
+            foreach (var v in files.Files)
+            {
+                int p = v.FileName.LastIndexOf('.');
+                string ext = v.FileName.Substring(p);
+                FileStream F = new FileStream("wwwroot/videos/" + "1" + ext, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+                await v.CopyToAsync(F);
+                F.Close();
+            }
+            return Ok();
+        }
 
         public class Test
         {

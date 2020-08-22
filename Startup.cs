@@ -54,12 +54,12 @@ namespace CatjiApi
             {
                 app.UseHsts();
             }
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
-            app.UseAuthentication();
-
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            app.UseFileServer();
+
+            app.UseAuthentication();
         }
     }
 
