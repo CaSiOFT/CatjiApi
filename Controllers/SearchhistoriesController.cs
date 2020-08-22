@@ -150,6 +150,7 @@ namespace CatjiApi.Controllers
         }
     }
 }
+/*
 //Get:api/search/hotlist
 [HttpGet("hotlist")]
 public async Task<IActionResult> GetVhotlist()
@@ -171,3 +172,4 @@ public async Task<IActionResult> GetVhotlist()
     return Ok(result);
 
 }
+*/

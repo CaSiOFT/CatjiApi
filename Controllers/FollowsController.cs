@@ -138,7 +138,7 @@ namespace CatjiApi.Controllers
     }
 
 }
-
+/*
 //GET:api/user/followers
 [HttpGet("followers")]
 public async Task<IActionResult> GetVfollowers()
@@ -195,3 +195,4 @@ public async Task<IActionResult> GetVfollowings()
     return Ok(result);
 }
 >>>>>>> Stashed changes
+*/

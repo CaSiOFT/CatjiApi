@@ -19,6 +19,23 @@ namespace CatjiApi.Controllers
         {
             _context = context;
         }
+
+        [HttpGet("test")]
+        public async Task<IActionResult> Test(int vid)
+        {
+            var video = await _context.Video.FindAsync(vid);
+            try
+            {
+                video.Description = "Test";
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return NotFound("Failed");
+            }
+            return Ok();
+        }
+
         // GET: api/Videos/comment
         [HttpGet("comment")]
         public async Task<IActionResult> GetVideoComment(int vid, int offset)

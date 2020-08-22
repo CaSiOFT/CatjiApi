@@ -86,7 +86,7 @@ namespace CatjiApi
 
             var user0 = await _context.Users.FindAsync(Convert.ToInt32(usid));
 
-            if (string.IsNullOrEmpty(lastChanged) ||
+            if (string.IsNullOrEmpty(lastChanged) || user0 == null ||
                 user0.ChangedTime != Convert.ToDateTime(lastChanged))
             {
                 context.RejectPrincipal();

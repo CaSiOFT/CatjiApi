@@ -36,7 +36,7 @@ namespace CatjiApi.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register(User user)
+        public async Task<IActionResult> Register([FromBody] User user)
         {
             if (!ModelState.IsValid)
             {
@@ -56,8 +56,15 @@ namespace CatjiApi.Controllers
             user0.CreateTime = DateTime.Now;
             user0.ChangedTime = user0.CreateTime;
 
-            _context.Users.Add(user0);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Users.Add(user0);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return NotFound("Create failed.");
+            }
 
             var claims = new List<Claim>()
             {
@@ -80,7 +87,7 @@ namespace CatjiApi.Controllers
                     AllowRefresh = true
                 }
                 );
-            return Ok(new { });
+            return Ok(user0.Usid);
 
         }
 
