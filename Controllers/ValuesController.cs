@@ -17,11 +17,12 @@ namespace CatjiApi.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> PostTest(IFormCollection files)
         {
+            var vid = files["vid"];
             foreach (var v in files.Files)
             {
                 int p = v.FileName.LastIndexOf('.');
                 string ext = v.FileName.Substring(p);
-                FileStream F = new FileStream("wwwroot/videos/" + "1" + ext, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+                FileStream F = new FileStream("wwwroot/videos/" + vid + ext, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
                 await v.CopyToAsync(F);
                 F.Close();
             }
