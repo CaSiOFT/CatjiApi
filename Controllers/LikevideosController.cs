@@ -20,6 +20,24 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpGet("info")]
+        public async Task<IActionResult> GetLikevideo(int id, int id2)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var likevideo = await _context.Likevideo.FindAsync(id, id2);
+
+            if (likevideo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok();
+        }
+
         // GET: api/Likevideos
         [HttpGet]
         public IEnumerable<Likevideo> GetLikevideo()
