@@ -38,14 +38,14 @@ namespace CatjiApi.Models
         public virtual DbSet<Videotag> Videotag { get; set; }
         public virtual DbSet<Watchhistory> Watchhistory { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseOracle("Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;");
-            }
-        }
+        //         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //         {
+        //             if (!optionsBuilder.IsConfigured)
+        //             {
+        // #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+        //                 optionsBuilder.UseOracle("Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;");
+        //             }
+        //         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,11 +53,13 @@ namespace CatjiApi.Models
 
             modelBuilder.Entity<Admin>(entity =>
             {
+                entity.HasKey(e => e.AdminId);
+
                 entity.ToTable("ADMIN");
 
-                entity.HasIndex(e => e.AdminId)
-                    .HasName("USERV1_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.AdminId)
+                //     .HasName("USERV1_PK")
+                //     .IsUnique();
 
                 entity.HasIndex(e => e.Email)
                     .HasName("USERV1_EMAIL_UN")
@@ -112,9 +114,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("BLOCK");
 
-                entity.HasIndex(e => new { e.BlockUsid, e.Usid })
-                    .HasName("BLOCK_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.BlockUsid, e.Usid })
+                //     .HasName("BLOCK_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.BlockUsid)
                     .HasColumnName("BLOCK_USID")
@@ -143,9 +145,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("BLOG");
 
-                entity.HasIndex(e => e.Bid)
-                    .HasName("BLOG_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.Bid)
+                //     .HasName("BLOG_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Bid)
                     .HasColumnName("BID")
@@ -192,9 +194,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("BLOGCOMMENT");
 
-                entity.HasIndex(e => e.Bcid)
-                    .HasName("BLOGCOMMENT_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.Bcid)
+                //     .HasName("BLOGCOMMENT_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Bcid)
                     .HasColumnName("BCID")
@@ -230,24 +232,24 @@ namespace CatjiApi.Models
                     .WithMany(p => p.Blogcomment)
                     .HasForeignKey(d => d.Bid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("BLOGCOMMENT_BLOG_FK");
+                    .HasConstraintName("BC_BLOG_FK");
 
                 entity.HasOne(d => d.ParentBc)
                     .WithMany(p => p.InverseParentBc)
                     .HasForeignKey(d => d.ParentBcid)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("BLOGCOMMENT_BLOGCOMMENT_BCID_FK");
+                    .HasConstraintName("BC_BC_BCID_FK");
 
                 entity.HasOne(d => d.ReplyBc)
                     .WithMany(p => p.InverseReplyBc)
                     .HasForeignKey(d => d.ReplyBcid)
-                    .HasConstraintName("BLOGCOMMENT_BLOGCOMMENT_FK");
+                    .HasConstraintName("BC_BC_FK");
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Blogcomment)
                     .HasForeignKey(d => d.Usid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("BLOGCOMMENT_USER_FK");
+                    .HasConstraintName("BC_USER_FK");
             });
 
             modelBuilder.Entity<Blogimage>(entity =>
@@ -256,9 +258,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("BLOGIMAGE");
 
-                entity.HasIndex(e => new { e.ImgUrl, e.Bid })
-                    .HasName("BLOGIMAGE_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.ImgUrl, e.Bid })
+                //     .HasName("BLOGIMAGE_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.ImgUrl)
                     .HasColumnName("IMG_URL")
@@ -277,11 +279,13 @@ namespace CatjiApi.Models
 
             modelBuilder.Entity<Cat>(entity =>
             {
+                entity.HasKey(e => new { e.CatId });
+
                 entity.ToTable("CAT");
 
-                entity.HasIndex(e => e.CatId)
-                    .HasName("CAT_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.CatId)
+                //     .HasName("CAT_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.CatId)
                     .HasColumnName("CAT_ID")
@@ -316,9 +320,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("FAVORITE");
 
-                entity.HasIndex(e => new { e.Usid, e.Vid })
-                    .HasName("FAVORITE_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Usid, e.Vid })
+                //     .HasName("FAVORITE_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -347,9 +351,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("FOLLOW");
 
-                entity.HasIndex(e => new { e.Usid, e.FollowUsid })
-                    .HasName("FOLLOW_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Usid, e.FollowUsid })
+                //     .HasName("FOLLOW_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -379,9 +383,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("LIKEBLOG");
 
-                entity.HasIndex(e => new { e.Usid, e.Bid })
-                    .HasName("LIKEBLOG_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Usid, e.Bid })
+                //     .HasName("LIKEBLOG_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -410,9 +414,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("LIKEBLOGCOMMENT");
 
-                entity.HasIndex(e => new { e.Usid, e.Bcid })
-                    .HasName("LIKEBLOGCOMMENT_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Usid, e.Bcid })
+                //     .HasName("LIKEBLOGCOMMENT_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -442,9 +446,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("LIKEVIDEO");
 
-                entity.HasIndex(e => new { e.Usid, e.Vid })
-                    .HasName("LIKEVIDEO_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Usid, e.Vid })
+                //     .HasName("LIKEVIDEO_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -473,9 +477,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("LIKEVIDEOCOMMENT");
 
-                entity.HasIndex(e => new { e.Usid, e.Vcid })
-                    .HasName("LIKEVIDEOCOMMENT_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Usid, e.Vcid })
+                //     .HasName("LVC_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -489,13 +493,13 @@ namespace CatjiApi.Models
                     .WithMany(p => p.Likevideocomment)
                     .HasForeignKey(d => d.Usid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("LIKEVIDEOCOMMENT_USER_FK");
+                    .HasConstraintName("LVC_USER_FK");
 
                 entity.HasOne(d => d.Vc)
                     .WithMany(p => p.Likevideocomment)
                     .HasForeignKey(d => d.Vcid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("LIKEVIDEOCOMMENT_FK");
+                    .HasConstraintName("LVC_FK");
             });
 
             modelBuilder.Entity<Message>(entity =>
@@ -504,9 +508,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("MESSAGE");
 
-                entity.HasIndex(e => e.Mid)
-                    .HasName("MESSAGE_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.Mid)
+                //     .HasName("MESSAGE_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Mid).HasColumnName("MID");
 
@@ -546,9 +550,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("REPORTBLOG");
 
-                entity.HasIndex(e => e.Brid)
-                    .HasName("REPORTBLOG_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.Brid)
+                //     .HasName("REPORTBLOG_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Brid).HasColumnName("BRID");
 
@@ -604,9 +608,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("REPORTVIDEO");
 
-                entity.HasIndex(e => e.Vrid)
-                    .HasName("REPORTVIDEO_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.Vrid)
+                //     .HasName("REPORTVIDEO_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Vrid).HasColumnName("VRID");
 
@@ -660,9 +664,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("SEARCHHISTORY");
 
-                entity.HasIndex(e => new { e.Usid, e.Content, e.CreateTime })
-                    .HasName("SEARCHHISTORY_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Usid, e.Content, e.CreateTime })
+                //     .HasName("SEARCHHISTORY_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -685,15 +689,17 @@ namespace CatjiApi.Models
 
             modelBuilder.Entity<Tag>(entity =>
             {
+                entity.HasKey(e => e.TagId);
+
                 entity.ToTable("TAG");
 
                 entity.HasIndex(e => e.Name)
                     .HasName("TAG__UN_NAME")
                     .IsUnique();
 
-                entity.HasIndex(e => e.TagId)
-                    .HasName("TAG_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.TagId)
+                //     .HasName("TAG_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.TagId)
                     .HasColumnName("TAG_ID")
@@ -732,9 +738,9 @@ namespace CatjiApi.Models
                     .HasName("USERS__UN_TEL")
                     .IsUnique();
 
-                entity.HasIndex(e => e.Usid)
-                    .HasName("USERS_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.Usid)
+                //     .HasName("USERS_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -812,9 +818,9 @@ namespace CatjiApi.Models
                     .HasName("VIDEO__UN_PATH")
                     .IsUnique();
 
-                entity.HasIndex(e => e.Vid)
-                    .HasName("VIDEO_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.Vid)
+                //     .HasName("VIDEO_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Vid).HasColumnName("VID");
 
@@ -880,9 +886,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("VIDEOCOMMENT");
 
-                entity.HasIndex(e => e.Vcid)
-                    .HasName("VIDEOCOMMENT_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => e.Vcid)
+                //     .HasName("VC_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Vcid).HasColumnName("VCID");
 
@@ -914,24 +920,24 @@ namespace CatjiApi.Models
                 entity.HasOne(d => d.ParentVc)
                     .WithMany(p => p.InverseParentVc)
                     .HasForeignKey(d => d.ParentVcid)
-                    .HasConstraintName("VIDEOCOMMENT_VIDEOCOMMENT_VCID_FK");
+                    .HasConstraintName("VC_VC_VCID_FK");
 
                 entity.HasOne(d => d.ReplyVc)
                     .WithMany(p => p.InverseReplyVc)
                     .HasForeignKey(d => d.ReplyVcid)
-                    .HasConstraintName("VIDEOCOMMENT_VIDEOCOMMENT_FK");
+                    .HasConstraintName("VC_VC_FK");
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Videocomment)
                     .HasForeignKey(d => d.Usid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("VIDEOCOMMENT_USER_FK");
+                    .HasConstraintName("VC_USER_FK");
 
                 entity.HasOne(d => d.V)
                     .WithMany(p => p.Videocomment)
                     .HasForeignKey(d => d.Vid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("VIDEOCOMMENT_VIDEO_FK");
+                    .HasConstraintName("VC_VIDEO_FK");
             });
 
             modelBuilder.Entity<Videotag>(entity =>
@@ -940,9 +946,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("VIDEOTAG");
 
-                entity.HasIndex(e => new { e.Vid, e.TagId })
-                    .HasName("VIDEOTAG_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Vid, e.TagId })
+                //     .HasName("VIDEOTAG_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Vid).HasColumnName("VID");
 
@@ -969,9 +975,9 @@ namespace CatjiApi.Models
 
                 entity.ToTable("WATCHHISTORY");
 
-                entity.HasIndex(e => new { e.Usid, e.Vid, e.CreateTime })
-                    .HasName("WATCHHISTORY_PK")
-                    .IsUnique();
+                // entity.HasIndex(e => new { e.Usid, e.Vid, e.CreateTime })
+                //     .HasName("WATCHHISTORY_PK")
+                //     .IsUnique();
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
