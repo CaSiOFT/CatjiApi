@@ -198,14 +198,14 @@ namespace CatjiApi.Controllers
 
         // GET: api/Users?usid=5 按usid查询用户信息
         [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery] int id)
+        public async Task<IActionResult> GetUsers([FromQuery] int usid)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var users = await _context.Users.FindAsync(id);
+            var users = await _context.Users.FindAsync(usid);
 
             if (users == null)
             {

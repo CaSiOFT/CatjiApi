@@ -19,7 +19,6 @@ namespace CatjiApi
     public class Startup
     {
         public IConfiguration Configuration { get; }
-        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
         public Startup(IConfiguration configuration)
         {
@@ -40,10 +39,14 @@ namespace CatjiApi
             services.AddScoped<CustomCookieAuthenticationEvents>();
             services.AddCors(option =>
             {
-                option.AddDefaultPolicy(
+                option.AddPolicy("AllowAll",
                     builder =>
                     {
-                        builder.WithOrigins("http://github.io");
+                        builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                        // .WithOrigins("*", "http://catji.site", "http://www.catji.site", "http://cocat.top", "http://kingzoey.github.io");
                     });
             });
         }
@@ -65,10 +68,10 @@ namespace CatjiApi
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
+            app.UseCors("AllowAll");
             app.UseMvc();
             app.UseFileServer();
 
-            app.UseCors();
             app.UseAuthentication();
         }
     }
