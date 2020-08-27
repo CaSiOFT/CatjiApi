@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CatjiApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using CatjiApi.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using System;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 //Scaffold-DbContext "Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;" Oracle.EntityFrameworkCore -outputdir Models -f
 
@@ -22,17 +18,18 @@ namespace CatjiApi
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ModelContext>(opt => opt.UseOracle("Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;"));
+            services.AddDbContext<ModelContext>(opt => opt.UseOracle(Configuration.GetConnectionString("DefaultConnection")));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddAuthentication("Cookies").AddCookie("Cookies", o =>
             {
@@ -41,11 +38,24 @@ namespace CatjiApi
                 o.EventsType = typeof(CustomCookieAuthenticationEvents);
             });
             services.AddScoped<CustomCookieAuthenticationEvents>();
+            services.AddCors(option =>
+            {
+                option.AddDefaultPolicy(
+                    builder =>
+                    {
+                        builder.WithOrigins("http://github.io");
+                    });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // using (var srvScope=app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope()){
+            //     var context=srvScope.ServiceProvider.GetRequiredService<>();
+            //     context.Database.EnsureCreated();
+            // }
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -56,9 +66,9 @@ namespace CatjiApi
             }
             app.UseHttpsRedirection();
             app.UseMvc();
-
             app.UseFileServer();
 
+            app.UseCors();
             app.UseAuthentication();
         }
     }
