@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CatjiApi.Models
 {
-    public class Cat
+    public partial class Cat
     {
         public Cat()
         {
