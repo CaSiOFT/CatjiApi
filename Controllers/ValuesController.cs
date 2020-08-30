@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CatjiApi.Controllers
 {
-    [Produces("application/json")]
-    [Consumes("application/json", "multipart/form-data")]
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
