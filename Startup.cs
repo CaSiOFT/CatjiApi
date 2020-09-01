@@ -69,10 +69,10 @@ namespace CatjiApi
             }
             // app.UseHttpsRedirection();
             app.UseCors("AllowAll");
-            app.UseMvc();
             app.UseFileServer();
-
             app.UseAuthentication();
+
+            app.UseMvc();
         }
     }
 
@@ -94,7 +94,7 @@ namespace CatjiApi
                                where c.Type == "LastChanged"
                                select c.Value).FirstOrDefault();
             var usid = (from c in userPrincipal.Claims
-                        where c.Type == ClaimTypes.Name
+                        where c.Type == "User"
                         select c.Value).FirstOrDefault();
 
             var user0 = await _context.Users.FindAsync(Convert.ToInt32(usid));
