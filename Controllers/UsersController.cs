@@ -5,7 +5,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using CatjiApi.Models;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatjiApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/users")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -25,7 +24,7 @@ namespace CatjiApi.Controllers
         }
 
         [Serializable]
-        new public class User
+        public class UserDTO
         {
             public int usid;
             public string nickname;
@@ -34,19 +33,30 @@ namespace CatjiApi.Controllers
             public string phone;
         }
 
-        // POST: api/Users/register 注册
+        // POST: api/users/register 注册
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] User user)
+        public async Task<IActionResult> Register(UserDTO user)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var users = _context.Users.Where(x => user.phone != null && x.Tel == user.phone || user.email != null && x.Email == user.email || x.Nickname == user.nickname);
+            if (user.email is null && user.phone is null)
+            {
+                return BadRequest(new { status = "bad request" });
+            }
 
-            if (users.Count() != 0)
+            var findUser = _context.Users.Where(x =>
+                user.phone != null && x.Tel == user.phone ||
+                user.email != null && x.Email == user.email ||
+                x.Nickname == user.nickname
+            );
+
+            if (findUser.Count() != 0)
+            {
                 return BadRequest(new { status = "replicated" });
+            }
 
             var user0 = new Users();
             user0.Nickname = user.nickname;
@@ -67,69 +77,114 @@ namespace CatjiApi.Controllers
                 return NotFound(new { status = "Create failed.", data = e.ToString() });
             }
 
-            var claims = new List<Claim>() {
-                new Claim (ClaimTypes.Name, user0.Usid.ToString ()),
-                new Claim ("LastChanged", user0.ChangedTime.ToString ())
-            };
+            await RealLogin(user, user0);
 
-            //使用证件单元创建一张身份证
-            var identity = new ClaimsIdentity(claims, "Cookies");
-
-            //使用身份证创建一个证件当事人
-            var identityPrincipal = new ClaimsPrincipal(identity);
-
-            //登录
-            await HttpContext.SignInAsync("Cookies", identityPrincipal, new AuthenticationProperties
-            {
-                //ExpiresUtc = DateTime.UtcNow.AddDays(1),
-                IsPersistent = true,
-                AllowRefresh = true
-            });
-            return Ok(new { status = "ok", data = user0.Usid });
-
+            return Ok(new { status = "ok", data = new { usid = user0.Usid } });
         }
 
-        // POST: api/Users/login 登录
+        // POST: /api/users/login 登录
         [HttpPost("login")]
-        public async Task<IActionResult> Login(User user)
+        public async Task<IActionResult> Login(UserDTO user)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var user0 = await _context.Users.FindAsync(user.usid);
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                return Ok(new { status = "already login" });
+            }
 
-            if (user0 == null)
+            if (user.email == null && user.phone == null && user.nickname == null)
+            {
+                return BadRequest(new { status = "bad request" });
+            }
+
+            var findUser = _context.Users.Where(x =>
+                (user.phone != null && x.Tel == user.phone ||
+                user.email != null && x.Email == user.email ||
+                user.nickname != null && x.Nickname == user.nickname) &&
+                user.password != null && x.Password == user.password
+            ).FirstOrDefault();
+
+            if (findUser == null)
             {
                 return NotFound(new { status = "not found" });
             }
 
-            if (user0.Password != user.password)
-                return BadRequest(new { status = "password error" });
+            await RealLogin(user, findUser);
 
-            var claims = new List<Claim>() {
-                new Claim (ClaimTypes.Name, user.usid.ToString ()),
-                new Claim ("LastChanged", user0.ChangedTime.ToString ())
+            return Ok(new { status = "ok" });
+        }
+
+        // 这里必须返回Task不然调用的时候没法await
+        // 参数分别为传输用的user对象
+        // 和数据库存储的user对象
+        private async Task RealLogin(UserDTO user, Users userDAO)
+        {
+            var claims = new List<Claim> {
+                new Claim ("User", userDAO.Usid.ToString ()),
+                new Claim ("LastChanged", userDAO.ChangedTime.ToString ())
             };
 
             //使用证件单元创建一张身份证
-            var identity = new ClaimsIdentity(claims, "Cookies");
+            var identity = new ClaimsIdentity(claims);
 
             //使用身份证创建一个证件当事人
             var identityPrincipal = new ClaimsPrincipal(identity);
 
             //登录
-            await HttpContext.SignInAsync("Cookies", identityPrincipal, new AuthenticationProperties
+            await HttpContext.SignInAsync(identityPrincipal, new AuthenticationProperties
             {
                 //ExpiresUtc = DateTime.UtcNow.AddDays(1),
                 IsPersistent = true,
                 AllowRefresh = true
             });
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
             return Ok(new { status = "ok" });
         }
 
-        // GET: api/Users/top 获取用户排行榜
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+            int usid;
+
+            if (!Int32.TryParse(claim, out usid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(usid);
+
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    usid = user.Usid,
+                    nickname = user.Nickname,
+                    password = user.Password,
+                    email = user.Email,
+                    phone = user.Tel
+                }
+            });
+        }
+
+        // 获取用户排行榜
         [HttpGet("top")]
         public IActionResult GetUTop()
         {
@@ -150,18 +205,8 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok", data = result });
         }
 
-        // POST: api/Users/logout 登出 [需要登录]
-        [HttpPost("logout")]
-        [Authorize]
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync();
-            return Ok(new { status = "ok" });
-        }
-
-        // GET: api/Users/info 获取自己的信息 [需要登录]
+        // 查询用户信息
         [HttpGet("info")]
-        [Authorize]
         public async Task<IActionResult> GetUserInfo()
         {
             if (!ModelState.IsValid)
@@ -169,7 +214,7 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var auth = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            var auth = await HttpContext.AuthenticateAsync();
             if (!auth.Succeeded)
             {
                 return BadRequest(new { status = "not login" });
@@ -188,16 +233,8 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok", data = users });
         }
 
-        // // GET: api/Users 获取自己的信息 [需要登录]
-        // [HttpGet]
-        // [Authorize]
-        // public IEnumerable<Users> GetUsers()
-        // {
-        //     return _context.Users;
-        // }
-
         // GET: api/Users?usid=5 按usid查询用户信息
-        [HttpGet]
+        // [HttpGet]
         public async Task<IActionResult> GetUsers([FromQuery] int usid)
         {
             if (!ModelState.IsValid)

@@ -67,7 +67,7 @@ namespace CatjiApi
             {
                 app.UseHsts();
             }
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
             app.UseCors("AllowAll");
             app.UseMvc();
             app.UseFileServer();
@@ -104,8 +104,7 @@ namespace CatjiApi
             {
                 context.RejectPrincipal();
 
-                await context.HttpContext.SignOutAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme);
+                await context.HttpContext.SignOutAsync();
             }
         }
     }
