@@ -109,23 +109,7 @@ namespace CatjiApi.Controllers
 
             return CreatedAtAction("GetLikeblog", new { id = likeblog.Usid }, likeblog);
         }
-        // GET: api/Likeblogs/like
-        [HttpGet("like")]
-        public async Task<IActionResult> GetBLike()
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var Lb = _context.Likeblog;
-
-            var result = Lb.Select(x => new {
-                Bid = x.Bid,
-
-                Usid = x.Usid
-            }); 
-            return Ok(result);
-        }
+        
         // DELETE: api/Likeblogs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLikeblog([FromRoute] int id)
