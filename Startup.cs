@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +36,8 @@ namespace CatjiApi
                 o.SlidingExpiration = true;
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
                 o.EventsType = typeof(CustomCookieAuthenticationEvents);
+                o.Cookie.SameSite = SameSiteMode.None;
+                o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             });
             services.AddScoped<CustomCookieAuthenticationEvents>();
             services.AddCors(option =>
@@ -71,7 +74,6 @@ namespace CatjiApi
             app.UseCors("AllowAll");
             app.UseFileServer();
             app.UseAuthentication();
-
             app.UseMvc();
         }
     }

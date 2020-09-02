@@ -147,6 +147,11 @@ namespace CatjiApi.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
             await HttpContext.SignOutAsync();
             return Ok(new { status = "ok" });
         }
