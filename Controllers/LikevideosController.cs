@@ -37,14 +37,30 @@ namespace CatjiApi.Controllers
 
             return Ok();
         }
-
+        
         // GET: api/Likevideos
         [HttpGet]
         public IEnumerable<Likevideo> GetLikevideo()
         {
             return _context.Likevideo;
         }
+        // GET: api/Likevideos/like
+        [HttpGet("like")]
+        public async Task<IActionResult> GetVLike()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var Lv = _context.Likevideo;
 
+            var result = Lv.Select(x => new {
+                Vid = x.Vid,
+
+                Usid = x.Usid
+            });
+            return Ok(result);
+        }
         // GET: api/Likevideos/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLikevideo([FromRoute] int id)

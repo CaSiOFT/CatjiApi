@@ -26,7 +26,23 @@ namespace CatjiApi.Controllers
         {
             return _context.Likevideocomment;
         }
+        // GET: api/Likevideocomments/like
+        [HttpGet("like")]
+        public async Task<IActionResult> GetVCLike()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var Lvc = _context.Likevideocomment;
 
+            var result = Lvc.Select(x => new {
+                Vcid = x.Vcid,
+
+                Usid = x.Usid
+            });
+            return Ok(result);
+        }
         // GET: api/Likevideocomments/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLikevideocomment([FromRoute] int id)
