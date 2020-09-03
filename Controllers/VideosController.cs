@@ -37,7 +37,7 @@ namespace CatjiApi.Controllers
         }
 
         // GET: api/Videos/comment
-        [HttpGet("comment")]
+        [HttpGet("comment")] 
         public async Task<IActionResult> GetVideoComment(int vid, int offset)
         {
             if (!ModelState.IsValid)
