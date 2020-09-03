@@ -143,33 +143,29 @@ namespace CatjiApi.Controllers
 
             return Ok(searchhistory);
         }
+        //Get:api/search/hotlist
+        [HttpGet("hotlist")]
+        public async Task<IActionResult> GetVhotlist()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var Searchhistories_hotlist = _context.Searchhistory.Take(10);
 
+            
+            var result = Searchhistories_hotlist.Select(x => new
+            {
+                v_Content = x.Content
+            });
+            return Ok(result);
+
+        }
         private bool SearchhistoryExists(int id)
         {
             return _context.Searchhistory.Any(e => e.Usid == id);
         }
     }
 }
-/*
-//Get:api/search/hotlist
-[HttpGet("hotlist")]
-public async Task<IActionResult> GetVhotlist()
-{
-    if(!ModelState.IsValid)
-    {
-        return BadRequest(ModelState);
-    }
-    var Searchhistories_hotlist = _context.Searchhistories.OrderBy(x => x.SearchNum).Take(10);
 
-    foreach(var Sh in Searchhistories_hotlist )
-    {
-        Sh.Us = await _context.Users.FindAsync(Sh.Usid);
-    }
-    var result = Searchhistories_hotlist.Select(x => new
-    {
-        v_Content = x.Context
-    });
-    return Ok(result);
 
-}
-*/
