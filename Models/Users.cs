@@ -5,6 +5,8 @@ namespace CatjiApi.Models
 {
     public partial class Users
     {
+        internal Follow Us;
+
         public Users()
         {
             BlockBlockUs = new HashSet<Block>();
@@ -65,5 +67,7 @@ namespace CatjiApi.Models
         public ICollection<Video> Video { get; set; }
         public ICollection<Videocomment> Videocomment { get; set; }
         public ICollection<Watchhistory> Watchhistory { get; set; }
+
+       
     }
 }
