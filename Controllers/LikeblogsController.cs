@@ -26,7 +26,34 @@ namespace CatjiApi.Controllers
         {
             return _context.Likeblog;
         }
+        //POST:api/Likeblogs/addLikeB
 
+        [HttpPost("addLikeB")]
+        public async Task<IActionResult> addLikeB(Likeblog Lb)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            var Likeblogs = _context.Likeblog.Where(x => x.Usid == Lb.Usid && x.Bid == Lb.Bid);
+
+            if (Likeblogs.Count() != 0)
+                return BadRequest();
+
+            var likeblog0 = new Likeblog();
+            likeblog0.Usid = Lb.Usid;
+            likeblog0.Bid = Lb.Bid;
+            try
+            {
+                _context.Likeblog.Add(likeblog0);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Create failed.", data = e.ToString() });
+            }
+            return Ok(new { status = "ok", data = new { usid = likeblog0.Usid, bid = likeblog0.Bid} });
+        }
         // GET: api/Likeblogs/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLikeblog([FromRoute] int id)
@@ -109,7 +136,7 @@ namespace CatjiApi.Controllers
 
             return CreatedAtAction("GetLikeblog", new { id = likeblog.Usid }, likeblog);
         }
-
+        
         // DELETE: api/Likeblogs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLikeblog([FromRoute] int id)

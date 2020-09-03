@@ -338,3 +338,9 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+# dotnet ef 创建的数据库移植代码
+Migrations
+
+# vscode配置文件夹
+.vscode

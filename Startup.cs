@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CatjiApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using CatjiApi.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using System;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 //Scaffold-DbContext "Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;" Oracle.EntityFrameworkCore -outputdir Models -f
 
@@ -22,30 +19,49 @@ namespace CatjiApi
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ModelContext>(opt => opt.UseOracle("Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;"));
+            services.AddDbContext<ModelContext>(opt => opt.UseOracle(Configuration.GetConnectionString("DefaultConnection")));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddAuthentication("Cookies").AddCookie("Cookies", o =>
             {
                 o.SlidingExpiration = true;
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
                 o.EventsType = typeof(CustomCookieAuthenticationEvents);
+                o.Cookie.SameSite = SameSiteMode.None;
+                o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             });
             services.AddScoped<CustomCookieAuthenticationEvents>();
+            services.AddCors(option =>
+            {
+                option.AddPolicy("AllowAll",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                        // .WithOrigins("*", "http://catji.site", "http://www.catji.site", "http://cocat.top", "http://kingzoey.github.io");
+                    });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // using (var srvScope=app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope()){
+            //     var context=srvScope.ServiceProvider.GetRequiredService<>();
+            //     context.Database.EnsureCreated();
+            // }
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -54,12 +70,11 @@ namespace CatjiApi
             {
                 app.UseHsts();
             }
-            app.UseHttpsRedirection();
-            app.UseMvc();
-
+            // app.UseHttpsRedirection();
+            app.UseCors("AllowAll");
             app.UseFileServer();
-
             app.UseAuthentication();
+            app.UseMvc();
         }
     }
 
@@ -81,7 +96,7 @@ namespace CatjiApi
                                where c.Type == "LastChanged"
                                select c.Value).FirstOrDefault();
             var usid = (from c in userPrincipal.Claims
-                        where c.Type == ClaimTypes.Name
+                        where c.Type == "User"
                         select c.Value).FirstOrDefault();
 
             var user0 = await _context.Users.FindAsync(Convert.ToInt32(usid));
@@ -91,8 +106,7 @@ namespace CatjiApi
             {
                 context.RejectPrincipal();
 
-                await context.HttpContext.SignOutAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme);
+                await context.HttpContext.SignOutAsync();
             }
         }
     }

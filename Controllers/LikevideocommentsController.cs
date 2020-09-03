@@ -26,7 +26,7 @@ namespace CatjiApi.Controllers
         {
             return _context.Likevideocomment;
         }
-
+       
         // GET: api/Likevideocomments/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLikevideocomment([FromRoute] int id)
@@ -45,7 +45,34 @@ namespace CatjiApi.Controllers
 
             return Ok(likevideocomment);
         }
+        //POST:api/Likevideocomments/addLikeVc
 
+        [HttpPost("addLikeVc")]
+        public async Task<IActionResult> addLikeVc(Likevideocomment Lbc)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            var Likevideocomments = _context.Likevideocomment.Where(x => x.Usid == Lbc.Usid && x.Vcid == Lbc.Vcid);
+
+            if (Likevideocomments.Count() != 0)
+                return BadRequest();
+
+            var likevideocomment0 = new Likevideocomment();
+            likevideocomment0.Usid = Lbc.Usid;
+            likevideocomment0.Vcid = Lbc.Vcid;
+            try
+            {
+                _context.Likevideocomment.Add(likevideocomment0);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Create failed.", data = e.ToString() });
+            }
+            return Ok(new { status = "ok", data = new { usid = likevideocomment0.Usid, vcid = likevideocomment0.Vcid } });
+        }
         // PUT: api/Likevideocomments/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutLikevideocomment([FromRoute] int id, [FromBody] Likevideocomment likevideocomment)

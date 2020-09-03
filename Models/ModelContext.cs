@@ -153,7 +153,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.CommentNum)
                     .HasColumnName("COMMENT_NUM")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.Content)
                     .HasColumnName("CONTENT")
@@ -169,11 +169,11 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.LikeNum)
                     .HasColumnName("LIKE_NUM")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.TransmitNum)
                     .HasColumnName("TRANSMIT_NUM")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
@@ -216,7 +216,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.LikeNum)
                     .HasColumnName("LIKE_NUM")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.ParentBcid).HasColumnName("PARENT_BCID");
 
@@ -767,7 +767,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.FollowerNum)
                     .HasColumnName("FOLLOWER_NUM")
                     .HasColumnType("NUMBER(8)")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.Gender)
                     .HasColumnName("GENDER")
@@ -820,7 +820,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.CommentNum)
                     .HasColumnName("COMMENT_NUM")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.Cover)
                     .HasColumnName("COVER")
@@ -837,7 +837,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.FavoriteNum)
                     .HasColumnName("FAVORITE_NUM")
                     .HasColumnType("NUMBER(8)")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.IsBanned)
                     .HasColumnName("IS_BANNED")
@@ -846,7 +846,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.LikeNum)
                     .HasColumnName("LIKE_NUM")
                     .HasColumnType("NUMBER(8)")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.Path)
                     .HasColumnName("PATH")
@@ -865,7 +865,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.WatchNum)
                     .HasColumnName("WATCH_NUM")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.HasOne(d => d.Us)
                     .WithMany(p => p.Video)
@@ -897,7 +897,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.LikeNum)
                     .HasColumnName("LIKE_NUM")
-                    .HasDefaultValueSql("0 ");
+                    .HasDefaultValueSql("0");
 
                 entity.Property(e => e.ParentVcid).HasColumnName("PARENT_VCID");
 

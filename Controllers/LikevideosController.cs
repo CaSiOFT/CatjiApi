@@ -37,12 +37,42 @@ namespace CatjiApi.Controllers
 
             return Ok();
         }
-
+        
         // GET: api/Likevideos
         [HttpGet]
         public IEnumerable<Likevideo> GetLikevideo()
         {
             return _context.Likevideo;
+        }
+        //POST:api/Likevideos/addLikeV
+
+        [HttpPost("addLikeV")]
+        public async Task<IActionResult> addLikeV( Likevideo Lv)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            
+            var Likevideos = _context.Likevideo.Where(x => x.Usid==Lv.Usid && x.Vid==Lv.Vid);
+
+            if (Likevideos.Count() != 0)
+                return BadRequest();
+
+            var likevideo1 = new Likevideo();
+            likevideo1.Usid = Lv.Usid;
+            likevideo1.Vid = Lv.Vid;
+            try
+            {
+                _context.Likevideo.Add(likevideo1);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Create failed.", data = e.ToString() });
+            }
+
+            return Ok(new { status = "ok", data = new { usid = likevideo1.Usid,vid= likevideo1.Vid } });
         }
 
         // GET: api/Likevideos/5
