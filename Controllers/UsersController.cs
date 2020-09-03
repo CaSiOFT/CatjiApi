@@ -5,7 +5,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using CatjiApi.Models;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -74,7 +73,7 @@ namespace CatjiApi.Controllers
             }
             catch (DbUpdateException e)
             {
-                return NotFound(new { status = "Create failed.", data = e.ToString() });
+                return BadRequest(new { status = "Create failed.", data = e.ToString() });
             }
 
             await RealLogin(user, user0);
@@ -157,7 +156,7 @@ namespace CatjiApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> LoginInfo()
         {
             var auth = await HttpContext.AuthenticateAsync();
             if (!auth.Succeeded)
@@ -259,7 +258,6 @@ namespace CatjiApi.Controllers
 
         // PUT: api/Users/{id:int} ???
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> PutUsers([FromRoute] int id, [FromBody] Users users)
         {
             if (!ModelState.IsValid)
@@ -293,7 +291,6 @@ namespace CatjiApi.Controllers
 
         // POST: api/Users [需要登录] 更新个人信息
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> PostUsers([FromBody] Users users)
         {
             if (!ModelState.IsValid)
@@ -315,7 +312,6 @@ namespace CatjiApi.Controllers
 
         // DELETE: api/Users/5 [需要登录] 更新个人信息
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<IActionResult> DeleteUsers([FromRoute] int id)
         {
             if (!ModelState.IsValid)

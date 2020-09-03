@@ -1,9 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
 
@@ -20,6 +23,71 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpPost("release"), DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload([FromForm] String title, [FromForm] String desc, IFormFile cover, IFormFile video, [FromForm] String tags, [FromForm] String catags)
+        {
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return BadRequest(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+            int usid;
+
+            if (!Int32.TryParse(claim, out usid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            string pathToSave;
+            string coverFileName = Guid.NewGuid().ToString() + '.' + cover.FileName.Split('.').Last();
+            string videoFileName = Guid.NewGuid().ToString() + '.' + video.FileName.Split('.').Last();
+
+            pathToSave = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", coverFileName);
+            using (var stream = System.IO.File.Create(pathToSave))
+            {
+                await cover.CopyToAsync(stream);
+            }
+
+            pathToSave = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\videos", videoFileName);
+            using (var stream = System.IO.File.Create(pathToSave))
+            {
+                await video.CopyToAsync(stream);
+            }
+
+            var videoPO = new Video();
+            videoPO.Usid = usid;
+            videoPO.Cover = coverFileName;
+            videoPO.Path = videoFileName;
+            videoPO.Title = title;
+            videoPO.Description = desc;
+            videoPO.CreateTime = DateTime.Now;
+
+            // foreach (var tag in tags)
+            // {
+            //     _context.Tag.Find(new { name = tag });
+            // }
+
+            try
+            {
+                await _context.Video.AddAsync(videoPO);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return BadRequest(new
+                {
+                    status = "Create failed.",
+                    data = e.ToString()
+                });
+            }
+
+            return Ok(new { status = "ok" });
+        }
+
+
+        // 
         [HttpGet("test")]
         public async Task<IActionResult> Test(int vid)
         {
@@ -36,7 +104,7 @@ namespace CatjiApi.Controllers
             return Ok();
         }
 
-        // GET: api/Videos/comment
+        // GET: /api/Videos/comment
         [HttpGet("comment")]
         public async Task<IActionResult> GetVideoComment(int vid, int offset)
         {
@@ -171,7 +239,7 @@ namespace CatjiApi.Controllers
 
             return Ok(result);
         }
-        
+
 
         // GET: api/Videos/info
         [HttpGet("info")]
