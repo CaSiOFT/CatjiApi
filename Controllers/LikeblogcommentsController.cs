@@ -45,7 +45,34 @@ namespace CatjiApi.Controllers
 
             return Ok(likeblogcomment);
         }
+        //POST:api/Likeblogcomments/addLikeBc
 
+        [HttpPost("addLikeBc")]
+        public async Task<IActionResult> addLikeBc(Likeblogcomment Lbc)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            var Likeblogcomments = _context.Likeblogcomment.Where(x => x.Usid == Lbc.Usid && x.Bcid == Lbc.Bcid);
+
+            if (Likeblogcomments.Count() != 0)
+                return BadRequest();
+
+            var likeblogcomment0 = new Likeblogcomment();
+            likeblogcomment0.Usid = Lbc.Usid;
+            likeblogcomment0.Bcid = Lbc.Bcid;
+            try
+            {
+                _context.Likeblogcomment.Add(likeblogcomment0);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Create failed.", data = e.ToString() });
+            }
+            return Ok(new { status = "ok", data = new { usid = likeblogcomment0.Usid, vcid = likeblogcomment0.Bcid } });
+        }
         // PUT: api/Likeblogcomments/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutLikeblogcomment([FromRoute] int id, [FromBody] Likeblogcomment likeblogcomment)
