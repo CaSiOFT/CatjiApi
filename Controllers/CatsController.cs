@@ -45,8 +45,8 @@ namespace CatjiApi.Controllers
 
             return Ok(cat);
         }
-        // GET: api/Cats/top
-        [HttpGet("top")]
+        // GET: api/Cats/hotlist
+        [HttpGet("hotlist")]
         public async Task<IActionResult> GetCTop()
         {
             if (!ModelState.IsValid)

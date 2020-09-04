@@ -191,7 +191,7 @@ namespace CatjiApi.Controllers
         }
 
         // 获取用户排行榜
-        [HttpGet("top")]
+        [HttpGet("hotlist")]
         public IActionResult GetUTop()
         {
             if (!ModelState.IsValid)
@@ -203,9 +203,11 @@ namespace CatjiApi.Controllers
 
             var result = user_top.Select(x => new
             {
-                u_id = x.Usid,
-                u_pic = x.Avatar,
-                u_name = x.Nickname
+                usid = x.Usid,
+                avatar = x.Avatar,
+                name = x.Nickname,
+                upload_num = _context.Video.Where(y => y.Usid == x.Usid).Count(),
+                fan_num = x.FollowerNum
             });
 
             return Ok(new { status = "ok", data = result });

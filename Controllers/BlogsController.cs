@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace CatjiApi.Controllers
 {
@@ -21,14 +23,28 @@ namespace CatjiApi.Controllers
         }
 
         [HttpGet("content")]
-        public async Task<IActionResult> GetBlog(int usid, int offset)
+        public async Task<IActionResult> GetBlog(int offset, bool only_cat)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var followedUsid = await _context.Follow.Where(x => x.Usid == usid).Select(x => x.FollowUsid).ToListAsync();
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+            int usid;
+
+            if (!int.TryParse(claim, out usid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var followedUsid = await _context.Follow.Where(x => x.Usid == usid && (!only_cat || _context.Users.Find(x.FollowUsid).CatId != null)).Select(x => x.FollowUsid).ToListAsync();
             followedUsid.Add(usid);
 
             var blogs = _context.Blog.Where(x => followedUsid.Contains(x.Usid)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
@@ -42,7 +58,7 @@ namespace CatjiApi.Controllers
             var result = blogs.Select(x => new
             {
                 bid = x.Bid,
-                time = x.CreateTime,
+                create_time = x.CreateTime,
                 content = x.Content,
                 up = new
                 {
@@ -53,13 +69,10 @@ namespace CatjiApi.Controllers
                 transmit_num = x.TransmitNum,
                 comment_num = x.CommentNum,
                 like_num = x.LikeNum,
-                images = x.Blogimage.Select(y => new
-                {
-                    url = y.ImgUrl
-                })
+                images = x.Blogimage.Select(y => y.ImgUrl)
             });
 
-            return Ok(result);
+            return Ok(new { status = "ok", data = result });
         }
 
         // GET: api/Blogs

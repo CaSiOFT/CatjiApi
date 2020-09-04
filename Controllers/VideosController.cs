@@ -127,13 +127,13 @@ namespace CatjiApi.Controllers
             return Ok();
         }
 
-        // GET: /api/Videos/comment
-        [HttpGet("comment")]
+        // GET: /api/Videos/comments
+        [HttpGet("comments")]
         public async Task<IActionResult> GetVideoComment(int vid, int offset)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { status = "validation failed" });
             }
 
             var comments = _context.Videocomment.Where(vc => vc.Vid == vid).OrderBy(x => x.CreateTime).Skip(offset).Take(10);
@@ -179,7 +179,7 @@ namespace CatjiApi.Controllers
                 })
             });
 
-            return Ok(result);
+            return Ok(new { status = "ok", data = result });
         }
         [HttpGet("comment2")]
         public async Task<IActionResult> GetVideoComment2(int vid, int offset)
@@ -234,13 +234,13 @@ namespace CatjiApi.Controllers
 
             return Ok(result);
         }
-        // GET: api/Videos/top
-        [HttpGet("top")]
+        // GET: api/Videos/hotlist
+        [HttpGet("hotlist")]
         public async Task<IActionResult> GetVTop()
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { status = "validation failed" });
             }
 
             var video_top = _context.Video.OrderByDescending(x => x.CommentNum + x.FavoriteNum * 2 + x.LikeNum + x.WatchNum).Take(10);
@@ -248,19 +248,22 @@ namespace CatjiApi.Controllers
             foreach (var vt in video_top)
             {
                 vt.Us = await _context.Users.FindAsync(vt.Usid);
-                //if(vt.Us.CatId!=null)//vt.Cat = await _context.Cat.FindAsync(vt.Us.CatId);
             }
 
             var result = video_top.Select(x => new
             {
-                v_id = x.Vid,
-                v_title = x.Title,
-                v_user = x.Us.Nickname,
-                v_user_avatar = x.Us.Avatar,
-                v_cover = x.Cover
+                vid = x.Vid,
+                name = x.Title,
+                up = new
+                {
+                    usid = x.Us.Usid,
+                    name = x.Us.Nickname,
+                    avatar = x.Us.Avatar
+                },
+                cover = x.Cover
             });
 
-            return Ok(result);
+            return Ok(new { status = "ok", data = result });
         }
 
 
