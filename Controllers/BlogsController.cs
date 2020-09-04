@@ -22,6 +22,35 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpGet("info")]
+        public async Task<IActionResult> GetBlogInfo(int offset, int usid)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var blogs = _context.Blog.Where(x => x.Usid == usid).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
+
+            foreach (var blog in blogs)
+            {
+                blog.Blogimage = await _context.Blogimage.Where(x => x.Bid == blog.Bid).ToListAsync();
+            }
+
+            var result = blogs.Select(x => new
+            {
+                bid = x.Bid,
+                create_time = x.CreateTime,
+                content = x.Content,
+                transmit_num = x.TransmitNum,
+                comment_num = x.CommentNum,
+                like_num = x.LikeNum,
+                images = x.Blogimage.Select(y => y.ImgUrl)
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
+
         [HttpGet("content")]
         public async Task<IActionResult> GetBlog(int offset, bool only_cat)
         {

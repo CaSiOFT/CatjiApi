@@ -20,6 +20,61 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        //GET:api/follows/followers
+        [HttpGet("followers")]
+        public async Task<IActionResult> Getfollowers(int offset, int Usid)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var followers = _context.Follow.Where(x => x.FollowUsid == Usid).Skip(offset).Take(20);
+
+            foreach (var follower in followers)
+            {
+                follower.Us = await _context.Users.FindAsync(follower.Usid);
+            }
+
+            var result = followers.Select(x => new
+            {
+                usid = x.Usid,
+                nickname = x.Us.Nickname,
+                signature = x.Us.Signature,
+                avatar = x.Us.Avatar,
+                gender = x.Us.Gender
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
+
+        [HttpGet("following")]
+        public async Task<IActionResult> Getfollowings(int offset, int Usid)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var followings = _context.Follow.Where(x => x.Usid == Usid).Skip(offset).Take(20);
+
+            foreach (var following in followings)
+            {
+                following.FollowUs = await _context.Users.FindAsync(following.FollowUsid);
+            }
+
+            var result = followings.Select(x => new
+            {
+                usid = x.FollowUsid,
+                nickname = x.FollowUs.Nickname,
+                signature = x.FollowUs.Signature,
+                avatar = x.FollowUs.Avatar,
+                gender = x.FollowUs.Gender
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
+
         // GET: api/Follows
         [HttpGet]
         public IEnumerable<Follow> GetFollow()
@@ -109,7 +164,7 @@ namespace CatjiApi.Controllers
 
             return CreatedAtAction("GetFollow", new { id = follow.Usid }, follow);
         }
-    
+
         // DELETE: api/Follows/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFollow([FromRoute] int id)
@@ -130,64 +185,11 @@ namespace CatjiApi.Controllers
 
             return Ok(follow);
         }
-        //GET:api/user/followers
-        [HttpGet("followers")]
-        
 
-        public async Task<IActionResult> Getfollowers( int offset, int Usid)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var followers =  _context.Follow.Where(x=>x.FollowUsid == Usid);
-            foreach(var follower in followers)
-            {
-                follower.Us = await _context.Users.FindAsync(follower.Usid);
-            }
-            var result = followers.Skip(offset).Take(20).Select(x => new
 
-            {
-                v_usid = x.Usid,
-                v_Nickname = x.Us.Nickname,
-                v_Signature=x.Us.Signature,
-                v_Avatar=x.Us.Avatar
-            });
-            return Ok(result);
-        }
-        [HttpGet("followings")]
-        public async Task<IActionResult> Getfollowings(int offset,int Usid)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var followings = _context.Follow.Where(x =>x. Usid == Usid);
-            foreach(var following in followings)
-            {
-                following.FollowUs = await _context.Users.FindAsync(following.FollowUsid);
-            }
-            var result = followings.Skip(offset).Take(20).Select(x => new
-            {
-                v_Usid = x.FollowUsid,
-                v_Nickname=x.FollowUs.Nickname,
-                v_Signature=x.FollowUs.Signature,
-                v_Avatar=x.FollowUs.Avatar
-            });
-            return Ok(result);
-        }
         private bool FollowExists(int id)
         {
             return _context.Follow.Any(e => e.Usid == id);
         }
-
     }
-
 }
-
-
-
-
-
-
-   
