@@ -24,7 +24,7 @@ namespace CatjiApi.Controllers
         }
 
         [HttpPost("release"), DisableRequestSizeLimit]
-        public async Task<IActionResult> Upload([FromForm] String title, [FromForm] String desc, IFormFile cover, IFormFile video, [FromForm] String tags, [FromForm] String catags)
+        public async Task<IActionResult> Upload(IFormCollection paras)
         {
             var auth = await HttpContext.AuthenticateAsync();
             if (!auth.Succeeded)
@@ -41,44 +41,67 @@ namespace CatjiApi.Controllers
             }
 
             string pathToSave;
-            string coverFileName = Guid.NewGuid().ToString() + '.' + cover.FileName.Split('.').Last();
-            string videoFileName = Guid.NewGuid().ToString() + '.' + video.FileName.Split('.').Last();
+            string coverFileName = Guid.NewGuid().ToString() + '.' + paras.Files["cover"].FileName.Split('.').Last();
+            string videoFileName = Guid.NewGuid().ToString() + '.' + paras.Files["video"].FileName.Split('.').Last();
 
-            pathToSave = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", coverFileName);
+            pathToSave = "wwwroot/images" + "/" + coverFileName;
             using (var stream = System.IO.File.Create(pathToSave))
             {
-                await cover.CopyToAsync(stream);
+                await paras.Files["cover"].CopyToAsync(stream);
             }
 
-            pathToSave = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\videos", videoFileName);
+            pathToSave = "wwwroot/videos" + "/" + videoFileName;
             using (var stream = System.IO.File.Create(pathToSave))
             {
-                await video.CopyToAsync(stream);
+                await paras.Files["video"].CopyToAsync(stream);
             }
 
             var videoPO = new Video();
             videoPO.Usid = usid;
             videoPO.Cover = coverFileName;
             videoPO.Path = videoFileName;
-            videoPO.Title = title;
-            videoPO.Description = desc;
+            videoPO.Title = paras["title"];
+            videoPO.Description = paras["desc"];
             videoPO.CreateTime = DateTime.Now;
-
-            // foreach (var tag in tags)
-            // {
-            //     _context.Tag.Find(new { name = tag });
-            // }
 
             try
             {
                 await _context.Video.AddAsync(videoPO);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException e)
+            catch (Exception e)
             {
                 return BadRequest(new
                 {
                     status = "Create failed.",
+                    data = e.ToString()
+                });
+            }
+
+            try
+            {
+                foreach (var v in paras["tag"])
+                {
+                    var tag = await _context.Tag.FirstOrDefaultAsync(x => x.Name == v);
+                    if (tag == null)
+                    {
+                        tag = new Tag();
+                        tag.Name = v;
+                        await _context.Tag.AddAsync(tag);
+                        await _context.SaveChangesAsync();
+                    }
+                    var vt = new Videotag();
+                    vt.TagId = tag.TagId;
+                    vt.Vid = videoPO.Vid;
+                    await _context.Videotag.AddAsync(vt);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                return Ok(new
+                {
+                    status = "Create tag failed.",
                     data = e.ToString()
                 });
             }
