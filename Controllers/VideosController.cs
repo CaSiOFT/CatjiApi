@@ -241,20 +241,20 @@ namespace CatjiApi.Controllers
         }
 
 
-        // GET: api/Videos/info
+        // GET: /api/Videos/info 查询视频基本信息
         [HttpGet("info")]
         public async Task<IActionResult> GetVideoInfo(int id)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { status = "error", data = ModelState.ToString() });
             }
 
             var video = await _context.Video.FindAsync(id);
 
             if (video == null)
             {
-                return NotFound();
+                return NotFound(new { status = "not found" });
             }
 
             var tags = _context.Videotag
@@ -262,7 +262,8 @@ namespace CatjiApi.Controllers
                 .Join(_context.Tag, x => x.TagId, y => y.TagId, (x, y) => new
                 {
                     name = y.Name,
-                    tag_id = x.TagId
+                    tag_id = x.TagId,
+                    cat_id = y.CatId
                 });
 
             var user = await _context.Users.FindAsync(video.Usid);
@@ -291,15 +292,7 @@ namespace CatjiApi.Controllers
                 }
             };
 
-
-            return Ok(result);
-        }
-
-        // GET: api/Videos
-        [HttpGet]
-        public IEnumerable<Video> GetVideo()
-        {
-            return _context.Video;
+            return Ok(new { status = "ok", data = result });
         }
 
         // GET: api/Videos/5
