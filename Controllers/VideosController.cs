@@ -80,7 +80,7 @@ namespace CatjiApi.Controllers
 
             try
             {
-                foreach (var v in paras["tag"])
+                foreach (var v in paras["tags"])
                 {
                     var tag = await _context.Tag.FirstOrDefaultAsync(x => x.Name == v);
                     if (tag == null)
