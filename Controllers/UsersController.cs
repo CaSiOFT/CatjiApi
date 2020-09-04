@@ -32,7 +32,7 @@ namespace CatjiApi.Controllers
             public string phone;
         }
 
-        // POST: api/users/register 注册
+        // POST: /api/users/register 注册
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserDTO user)
         {
@@ -93,7 +93,7 @@ namespace CatjiApi.Controllers
             var auth = await HttpContext.AuthenticateAsync();
             if (auth.Succeeded)
             {
-                return Ok(new { status = "already login" });
+                return BadRequest(new { status = "already login" });
             }
 
             if (user.email == null && user.phone == null && user.nickname == null)
@@ -143,6 +143,7 @@ namespace CatjiApi.Controllers
             });
         }
 
+        // POST: /api/users/logout 注销
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
@@ -155,6 +156,7 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok" });
         }
 
+        // GET: /api/users 查询登录信息(!不是用户信息)
         [HttpGet]
         public async Task<IActionResult> LoginInfo()
         {
@@ -209,41 +211,27 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok", data = result });
         }
 
-        // 查询用户信息
+        // GET: /api/users/info 查询用户信息(!不是登录信息)
         [HttpGet("info")]
-        public async Task<IActionResult> GetUserInfo()
+        public async Task<IActionResult> GetUserInfo(int? usid)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var auth = await HttpContext.AuthenticateAsync();
-            if (!auth.Succeeded)
+            // var auth = await HttpContext.AuthenticateAsync();
+            // if (!auth.Succeeded)
+            // {
+            //     return BadRequest(new { status = "not login" });
+            // }
+
+            // int usid;
+            // bool bo1 = int.TryParse(auth.Principal.Identity.Name, out usid);
+
+            if (usid == null)
             {
-                return BadRequest(new { status = "not login" });
-            }
-
-            int usid;
-            bool bo1 = int.TryParse(auth.Principal.Identity.Name, out usid);
-
-            var users = await _context.Users.FindAsync(usid);
-
-            if (users == null)
-            {
-                return NotFound(new { status = "not found" });
-            }
-
-            return Ok(new { status = "ok", data = users });
-        }
-
-        // GET: api/Users?usid=5 按usid查询用户信息
-        // [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery] int usid)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new { status = "invalid", data = ModelState });
+                return BadRequest(new { status = "no usid" });
             }
 
             var users = await _context.Users.FindAsync(usid);
@@ -253,7 +241,21 @@ namespace CatjiApi.Controllers
                 return NotFound(new { status = "not found" });
             }
 
-            return Ok(new { status = "ok", data = users });
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    usid = users.Usid,
+                    nickname = users.Nickname,
+                    gender = users.Gender,
+                    avatar = users.Avatar,
+                    signature = users.Signature,
+                    follower_num = users.FollowerNum,
+                    followee_num = users.FollowUs.Count,
+                    upload_num = users.Video.Count,
+                }
+            });
         }
 
         // PUT: api/Users/{id:int} ???
