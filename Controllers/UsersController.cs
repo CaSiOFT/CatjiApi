@@ -31,6 +31,69 @@ namespace CatjiApi.Controllers
             public string email;
             public string phone;
         }
+        //GET:api/Users/search 根据关键词查询用户信息
+        [HttpGet("search")]
+        public async Task<IActionResult> GetUsersearch(int page, string keyword, bool only_cat)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (only_cat == true)
+            {
+                var keys = _context.Users.Where(x => x.Signature.Contains(keyword) && x.CatId != 0).Skip(page);
+                if (await keys.CountAsync() == 0)
+                {
+                    return NotFound(new { status = "未能找到相关用户" });
+                }
+
+                else
+                {
+                    var result = keys.Select(x => new
+
+                    {
+                        status = "ok",
+                        data = new
+                        {
+                            Vid = x.Usid,
+                            name = x.Nickname,
+                            desc = x.Signature,
+                            follow_num = x.FollowerNum,
+                            avatar = x.Avatar
+
+                        }
+                    });
+                    return Ok(result);
+                }
+            }
+            else
+            {
+                var keys = _context.Users.Where(x => x.Signature.Contains(keyword)).Skip(page);
+                if (await keys.CountAsync() == 0)
+                {
+                    return NotFound(new { status = "未能找到相关用户" });
+                }
+
+                else
+                {
+                    var result = keys.Select(x => new
+
+                    {
+                        status = "ok",
+                        data = new
+                        {
+                            Vid = x.Usid,
+                            name = x.Nickname,
+                            desc = x.Signature,
+                            follow_num = x.FollowerNum,
+                            avatar = x.Avatar
+
+                        }
+                    });
+                    return Ok(result);
+                }
+            }
+        }
 
         // POST: /api/users/register 注册
         [HttpPost("register")]
@@ -455,8 +518,7 @@ namespace CatjiApi.Controllers
             }
             return Ok(new { status = "ok" });
         }
-
-
+        
 
         //GET:/api/users/changeavatar
 
