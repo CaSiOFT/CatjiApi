@@ -22,6 +22,73 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpPost("release"), DisableRequestSizeLimit]
+        public async Task<IActionResult> Upload(IFormCollection paras)
+        {
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return BadRequest(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+            int usid;
+
+            if (!int.TryParse(claim, out usid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var blogPO = new Blog();
+
+            blogPO.IsPublic = Convert.ToDecimal(paras["is_public"]);
+            blogPO.Content = paras["content"];
+            blogPO.CreateTime = DateTime.Now;
+            blogPO.Usid = usid;
+
+            try
+            {
+                await _context.Blog.AddAsync(blogPO);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new
+                {
+                    status = "Create failed.",
+                    data = e.ToString()
+                });
+            }
+
+            try
+            {
+                foreach (var v in paras.Files.GetFiles("images"))
+                {
+                    string FileName = Guid.NewGuid().ToString() + '.' + v.FileName.Split('.').Last();
+                    string pathToSave = "wwwroot/images" + "/" + FileName;
+                    using (var stream = System.IO.File.Create(pathToSave))
+                    {
+                        await v.CopyToAsync(stream);
+                    }
+                    var BG = new Blogimage();
+                    BG.Bid = blogPO.Bid;
+                    BG.ImgUrl = FileName;
+                    await _context.Blogimage.AddAsync(BG);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                return Ok(new
+                {
+                    status = "Create image failed.",
+                    data = e.ToString()
+                });
+            }
+
+            return Ok(new { status = "ok" });
+        }
+
         [HttpGet("info")]
         public async Task<IActionResult> GetBlogInfo(int offset, int usid)
         {
@@ -73,10 +140,11 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "validation failed" });
             }
 
-            var followedUsid = await _context.Follow.Where(x => x.Usid == usid && (!only_cat || _context.Users.Find(x.FollowUsid).CatId != null)).Select(x => x.FollowUsid).ToListAsync();
+            //var followedUsid = await _context.Follow.Where(x => x.Usid == usid && (!only_cat || _context.Users.Find(x.FollowUsid).CatId != null)).Select(x => x.FollowUsid).ToListAsync();
+            var followedUsid = await _context.Follow.Where(x => x.Usid == usid).Select(x => x.FollowUsid).ToListAsync();
             followedUsid.Add(usid);
 
-            var blogs = _context.Blog.Where(x => followedUsid.Contains(x.Usid)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
+            var blogs = _context.Blog.Where(x => followedUsid.Contains(x.Usid) && (!only_cat || x.IsPublic != 0)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
 
             foreach (var blog in blogs)
             {
