@@ -29,7 +29,8 @@ namespace CatjiApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ModelContext>(opt => opt.UseOracle(Configuration.GetConnectionString("DefaultConnection")));
+            //services.AddDbContext<ModelContext>(opt => opt.UseOracle(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<ModelContext>(opt => opt.UseOracle(Configuration.GetConnectionString("DebugConnection")));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddAuthentication("Cookies").AddCookie("Cookies", o =>
             {

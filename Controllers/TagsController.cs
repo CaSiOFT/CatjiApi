@@ -51,7 +51,7 @@ namespace CatjiApi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { status = "invalid", data = ModelState });
             }
             var keys = _context.Tag.Where(x => x.Name.Contains(keyword)).Skip(page);
             if (await keys.CountAsync() == 0)
@@ -73,7 +73,7 @@ namespace CatjiApi.Controllers
 
                     }
                 });
-                return Ok(result);
+                return Ok(new { status = "ok", data = result });
             }
 
         }

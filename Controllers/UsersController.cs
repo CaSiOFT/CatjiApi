@@ -37,7 +37,7 @@ namespace CatjiApi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { status = "invalid", data = ModelState });
             }
             if (only_cat == true)
             {
@@ -63,7 +63,7 @@ namespace CatjiApi.Controllers
 
                         }
                     });
-                    return Ok(result);
+                    return Ok(new { status = "ok", data = result });
                 }
             }
             else
@@ -90,7 +90,7 @@ namespace CatjiApi.Controllers
 
                         }
                     });
-                    return Ok(result);
+                    return Ok(new { status = "ok", data = result });
                 }
             }
         }

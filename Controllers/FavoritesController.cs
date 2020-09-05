@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace CatjiApi.Controllers
 {
@@ -18,6 +20,49 @@ namespace CatjiApi.Controllers
         public FavoritesController(ModelContext context)
         {
             _context = context;
+        }
+
+        [HttpGet("info")]
+        public async Task<IActionResult> GetFavoriteInfo(int offset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return BadRequest(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+            int usid;
+
+            if (!int.TryParse(claim, out usid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var videos = _context.Favorite.Where(x => x.Usid == usid).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => y);
+
+            var result = _context.Users.Join(videos, x => x.Usid, y => y.Usid, (x, y) => new
+            {
+                nickname = x.Nickname,
+                vid = y.Vid,
+                title = y.Title,
+                cover = y.Cover,
+                description = y.Description,
+                path = y.Path,
+                create_time = y.CreateTime,
+                time = y.Time,
+                like_num = y.LikeNum,
+                favorite_num = y.FavoriteNum,
+                watch_num = y.WatchNum,
+                is_banned = y.IsBanned
+            });
+
+            return Ok(new { status = "ok", data = result });
         }
 
         // GET: api/Favorites

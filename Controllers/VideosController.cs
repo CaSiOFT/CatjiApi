@@ -109,6 +109,31 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok" });
         }
 
+        [HttpGet("own")]
+        public async Task<IActionResult> GetVideoOwn(int usid, int offset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var result = _context.Video.Where(x => x.Usid == usid).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10).Select(x => new
+            {
+                vid = x.Vid,
+                title = x.Title,
+                cover = x.Cover,
+                description = x.Description,
+                path = x.Path,
+                create_time = x.CreateTime,
+                time = x.Time,
+                like_num = x.LikeNum,
+                favorite_num = x.FavoriteNum,
+                watch_num = x.WatchNum,
+                is_banned = x.IsBanned
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
 
         // 
         [HttpGet("test")]
@@ -181,6 +206,7 @@ namespace CatjiApi.Controllers
 
             return Ok(new { status = "ok", data = result });
         }
+
         [HttpGet("comment2")]
         public async Task<IActionResult> GetVideoComment2(int vid, int offset)
         {
@@ -234,6 +260,7 @@ namespace CatjiApi.Controllers
 
             return Ok(result);
         }
+
         // GET: api/Videos/hotlist
         [HttpGet("hotlist")]
         public async Task<IActionResult> GetVTop()
@@ -265,7 +292,6 @@ namespace CatjiApi.Controllers
 
             return Ok(new { status = "ok", data = result });
         }
-
 
         // GET: /api/Videos/info 查询视频基本信息
         [HttpGet("info")]
@@ -320,45 +346,43 @@ namespace CatjiApi.Controllers
 
             return Ok(new { status = "ok", data = result });
         }
+
         //Get:api/videos/search
         [HttpGet("search")]
         public async Task<IActionResult> Getvideosearch(int page, string keyword)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { status = "invalid", data = ModelState });
             }
+
             var keys = _context.Video.Where(x => x.Description.Contains(keyword)).Skip(page);
             if (await keys.CountAsync() == 0)
             {
-                return NotFound(new { status = "未能找到相关猫咪" });
+                return NotFound(new { status = "未能找到相关视频" });
             }
-            else
+
+            var result = keys.Select(x => new
             {
-
-                var result = keys.Select(x => new
-
+                status = "ok",
+                data = new
                 {
-                    status = "ok",
-                    data = new
-                    {
-                        vid = x.Vid,
-                        title = x.Title,
-                        desc = x.Description,
-                        cover=x.Cover,
-                        view_num=x.WatchNum,
-                        comment_num=x.IsBanned,
-                        upload_time=x.CreateTime,
-                        url=x.Path,
-                        like_num=x.LikeNum,
-                        favorite_num=x.FavoriteNum,
-                        share_num=0
-                    }
-                });
-                return Ok(result);
-            }
-
+                    vid = x.Vid,
+                    title = x.Title,
+                    desc = x.Description,
+                    cover = x.Cover,
+                    view_num = x.WatchNum,
+                    comment_num = x.IsBanned,
+                    upload_time = x.CreateTime,
+                    url = x.Path,
+                    like_num = x.LikeNum,
+                    favorite_num = x.FavoriteNum,
+                    share_num = 0
+                }
+            });
+            return Ok(new { status = "ok", data = result });
         }
+
         // GET: api/Videos/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVideo([FromRoute] int id)

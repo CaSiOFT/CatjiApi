@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace CatjiApi.Controllers
 {
@@ -18,6 +20,50 @@ namespace CatjiApi.Controllers
         public WatchhistoriesController(ModelContext context)
         {
             _context = context;
+        }
+
+        [HttpGet("info")]
+        public async Task<IActionResult> GetWatchInfo(int offset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return BadRequest(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+            int usid;
+
+            if (!int.TryParse(claim, out usid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var videos = _context.Watchhistory.Where(x => x.Usid == usid).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => x);
+
+            var result = _context.Users.Join(videos, x => x.Usid, y => y.Usid, (x, y) => new
+            {
+                watch_time = y.CreateTime,
+                nickname = x.Nickname,
+                vid = y.V.Vid,
+                title = y.V.Title,
+                cover = y.V.Cover,
+                description = y.V.Description,
+                path = y.V.Path,
+                create_time = y.V.CreateTime,
+                time = y.V.Time,
+                like_num = y.V.LikeNum,
+                favorite_num = y.V.FavoriteNum,
+                watch_num = y.V.WatchNum,
+                is_banned = y.V.IsBanned
+            });
+
+            return Ok(new { status = "ok", data = result });
         }
 
         // GET: api/Watchhistories

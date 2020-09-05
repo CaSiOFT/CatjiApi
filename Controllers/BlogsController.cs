@@ -25,6 +25,11 @@ namespace CatjiApi.Controllers
         [HttpPost("release"), DisableRequestSizeLimit]
         public async Task<IActionResult> Upload(IFormCollection paras)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
             var auth = await HttpContext.AuthenticateAsync();
             if (!auth.Succeeded)
             {
