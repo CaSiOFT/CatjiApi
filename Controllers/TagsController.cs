@@ -79,7 +79,7 @@ namespace CatjiApi.Controllers
         }
         // GET: api/Tags/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTag([FromRoute] int id)
+        public async Task<IActionResult> GetTags([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
