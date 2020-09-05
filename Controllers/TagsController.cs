@@ -45,7 +45,56 @@ namespace CatjiApi.Controllers
 
             return Ok(tag);
         }
+        //Get:api/tags/search
+        [HttpGet("search")]
+        public async Task<IActionResult> Gettagsearch(int page, string keyword)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var keys = _context.Tag.Where(x => x.Name.Contains(keyword)).Skip(page);
+            if (await keys.CountAsync() == 0)
+            {
+                return NotFound(new { status = "未能找到相关猫咪" });
+            }
+            else
+            {
 
+                var result = keys.Select(x => new
+
+                {
+                    status = "ok",
+                    data = new
+                    {
+                        tag_id = x.TagId,
+                        name = x.Name,
+                        is_cat = x.CatId
+
+                    }
+                });
+                return Ok(result);
+            }
+
+        }
+        // GET: api/Tags/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTag([FromRoute] int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var tag = await _context.Tag.FindAsync(id);
+
+            if (tag == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(tag);
+        }
         // PUT: api/Tags/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTag([FromRoute] int id, [FromBody] Tag tag)
