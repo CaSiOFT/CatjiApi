@@ -320,7 +320,45 @@ namespace CatjiApi.Controllers
 
             return Ok(new { status = "ok", data = result });
         }
+        //Get:api/videos/search
+        [HttpGet("search")]
+        public async Task<IActionResult> Getvideosearch(int page, string keyword)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var keys = _context.Video.Where(x => x.Description.Contains(keyword)).Skip(page);
+            if (await keys.CountAsync() == 0)
+            {
+                return NotFound(new { status = "未能找到相关猫咪" });
+            }
+            else
+            {
 
+                var result = keys.Select(x => new
+
+                {
+                    status = "ok",
+                    data = new
+                    {
+                        vid = x.Vid,
+                        title = x.Title,
+                        desc = x.Description,
+                        cover=x.Cover,
+                        view_num=x.WatchNum,
+                        comment_num=x.IsBanned,
+                        upload_time=x.CreateTime,
+                        url=x.Path,
+                        like_num=x.LikeNum,
+                        favorite_num=x.FavoriteNum,
+                        share_num=0
+                    }
+                });
+                return Ok(result);
+            }
+
+        }
         // GET: api/Videos/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVideo([FromRoute] int id)
