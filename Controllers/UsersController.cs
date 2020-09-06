@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using CatjiApi.Models;
@@ -306,6 +307,8 @@ namespace CatjiApi.Controllers
                 return NotFound(new { status = "not found" });
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             return Ok(new
             {
                 status = "ok",
@@ -314,7 +317,7 @@ namespace CatjiApi.Controllers
                     usid = users.Usid,
                     nickname = users.Nickname,
                     gender = users.Gender,
-                    avatar = users.Avatar,
+                    avatar = baseUrl + "images/" + (users.Avatar != null ? users.Avatar : "noface.png"),
                     signature = users.Signature,
                     follower_num = users.FollowerNum,
                     followee_num = users.FollowUs.Count,
@@ -323,63 +326,63 @@ namespace CatjiApi.Controllers
             });
         }
 
-        // PUT: api/Users/{id:int} ???
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUsers([FromRoute] int id, [FromBody] Users users)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new { status = "invalid", data = ModelState });
-            }
+        // // PUT: api/Users/{id:int} ???
+        // [HttpPut("{id}")]
+        // public async Task<IActionResult> PutUsers([FromRoute] int id, [FromBody] Users users)
+        // {
+        //     if (!ModelState.IsValid)
+        //     {
+        //         return BadRequest(new { status = "invalid", data = ModelState });
+        //     }
 
-            if (id != users.Usid)
-            {
-                return BadRequest(new { status = "usid not match" });
-            }
+        //     if (id != users.Usid)
+        //     {
+        //         return BadRequest(new { status = "usid not match" });
+        //     }
 
-            if (!UsersExists(id))
-            {
-                return NotFound(new { status = "not found" });
-            }
+        //     if (!UsersExists(id))
+        //     {
+        //         return NotFound(new { status = "not found" });
+        //     }
 
-            _context.Entry(users).State = EntityState.Modified;
+        //     _context.Entry(users).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                return BadRequest(new { status = "db exception" });
-            }
+        //     try
+        //     {
+        //         await _context.SaveChangesAsync();
+        //     }
+        //     catch (DbUpdateException)
+        //     {
+        //         return BadRequest(new { status = "db exception" });
+        //     }
 
-            return Ok(new { status = "ok" });
-        }
+        //     return Ok(new { status = "ok" });
+        // }
 
-        // POST: api/Users [需要登录] 更新个人信息
-        [HttpPost]
-        public async Task<IActionResult> PostUsers([FromBody] Users users)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new { status = "invalid", data = ModelState });
-            }
+        // // POST: api/Users ???
+        // [HttpPost]
+        // public async Task<IActionResult> PostUsers([FromBody] Users users)
+        // {
+        //     if (!ModelState.IsValid)
+        //     {
+        //         return BadRequest(new { status = "invalid", data = ModelState });
+        //     }
 
-            _context.Users.Add(users);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                return NotFound(new { status = "db exception", data = e.ToString() });
-            }
-            return CreatedAtAction("GetUsers", new { id = users.Usid }, users);
-        }
+        //     _context.Users.Add(users);
+        //     try
+        //     {
+        //         await _context.SaveChangesAsync();
+        //     }
+        //     catch (DbUpdateException e)
+        //     {
+        //         return NotFound(new { status = "db exception", data = e.ToString() });
+        //     }
+        //     return CreatedAtAction("GetUsers", new { id = users.Usid }, users);
+        // }
 
-        //GET:/api/users/updateinfo
-        [HttpGet("updateinfo")]
-        public async Task<IActionResult> updateinfo(Users us)
+        // POST: /api/users/updateinfo
+        [HttpPost("updateinfo")]
+        public async Task<IActionResult> updateinfo(IFormCollection paras)
         {
             if (!ModelState.IsValid)
             {
@@ -392,189 +395,187 @@ namespace CatjiApi.Controllers
             }
 
             var claim = User.FindFirstValue("User");
-            int usid;
 
-            if (!Int32.TryParse(claim, out usid))
+            if (!Int32.TryParse(claim, out var loginUsid))
             {
                 return BadRequest(new { status = "validation failed" });
             }
 
-            var user = await _context.Users.FindAsync(usid);
-            if(user.Usid!=us.Usid)
+            var user = await _context.Users.FindAsync(loginUsid);
+
+            if (!paras.TryGetValue("usid", out var paramUsidStr))
+            {
+                return BadRequest(new { status = "No usid!" });
+            }
+
+            if (!Int32.TryParse(paramUsidStr, out var paramUsid))
+            {
+                return BadRequest(new { status = "Usid should be a number!" });
+            }
+
+            if (user.Usid != paramUsid)
             {
                 return BadRequest(new { status = "That's not you!" });
             }
-            if(us.Email!=null)
+
+            if (paras.TryGetValue("email", out var paramEmail) && paramEmail != user.Email)
             {
-                var temp_u = _context.Users.Where(x => x.Email == us.Email);
+                var temp_u = _context.Users.Where(x => x.Email == paramEmail);
 
                 if (temp_u.Count() != 0)
+                {
                     return BadRequest(new { status = "The Email address is already taken" });
-                try
-                {
-                    user.Email = us.Email;
-                    await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateException e)
-                {
-                    return NotFound(new { status = "Save failed.", data = e.ToString() });
-                }
+
+                user.Email = paramEmail;
             }
-            if (us.Tel != null)
+
+            if (paras.TryGetValue("tel", out var paramTel) && paramTel != user.Tel)
             {
-                var temp_u = _context.Users.Where(x => x.Tel == us.Tel);
+                var temp_u = _context.Users.Where(x => x.Tel == paramTel);
 
                 if (temp_u.Count() != 0)
+                {
                     return BadRequest(new { status = "The Tel is already used" });
-                try
-                {
-                    user.Tel = us.Tel;
-                    await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateException e)
-                {
-                    return NotFound(new { status = "Save failed.", data = e.ToString() });
-                }
+
+                user.Tel = paramTel;
             }
-            if (us.Nickname != null)
+
+            if (paras.TryGetValue("nickname", out var paramNickname) && paramNickname != user.Nickname)
             {
-                var temp_u = _context.Users.Where(x => x.Nickname == us.Nickname);
+                var temp_u = _context.Users.Where(x => x.Nickname == paramNickname);
 
                 if (temp_u.Count() != 0)
+                {
                     return BadRequest(new { status = "The Nickname is already taken" });
-                try
-                {
-                    user.Nickname = us.Nickname;
-                    await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateException e)
-                {
-                    return NotFound(new { status = "Save failed.", data = e.ToString() });
-                }
+
+                user.Nickname = paramNickname;
             }
-            if (us.Password != null)
+
+            if (paras.TryGetValue("password", out var paramPassword))
             {
-                try
-                {
-                    user.Password = us.Password;
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException e)
-                {
-                    return NotFound(new { status = "Save failed.", data = e.ToString() });
-                }
+                user.Password = paramPassword;
             }
-            if (us.Gender != null)
+
+            if (paras.TryGetValue("gender", out var paramGender))
             {
-                try
-                {
-                    user.Gender = us.Gender;
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException e)
-                {
-                    return NotFound(new { status = "Save failed.", data = e.ToString() });
-                }
+                user.Gender = paramGender;
             }
-            if (us.Birthday != null)
+
+            if (paras.TryGetValue("birthday", out var paramBirthday))
             {
-                try
+                if (!Int32.TryParse(paramBirthday, out var ticks))
                 {
-                    user.Birthday = us.Birthday;
-                    await _context.SaveChangesAsync();
+                    return BadRequest(new { status = "Birthday format incorrect" });
                 }
-                catch (DbUpdateException e)
-                {
-                    return NotFound(new { status = "Save failed.", data = e.ToString() });
-                }
+                DateTime dateTime = new DateTime(ticks);
+                user.Birthday = dateTime;
             }
-            if (us.Signature != null)
+
+            if (paras.TryGetValue("signature", out var paramSignature))
             {
-                try
-                {
-                    user.Signature = us.Signature;
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException e)
-                {
-                    return NotFound(new { status = "Save failed.", data = e.ToString() });
-                }
+                user.Signature = paramSignature;
             }
-            if (us.CatId != null)
+
+            if (paras.TryGetValue("avatar", out var paramAvatar))
             {
-                var temp_u = _context.Users.Where(x => x.CatId == us.CatId);
+                IFormFile avatarFile = paras.Files.GetFile("avatar");
+                string avatarFileName = Guid.NewGuid().ToString() + '.' + avatarFile.FileName.Split('.').Last();
+                string pathToSave = "wwwroot/images" + "/" + avatarFileName;
+                using (var stream = System.IO.File.Create(pathToSave))
+                {
+                    await avatarFile.CopyToAsync(stream);
+                }
+                user.Avatar = paramSignature;
+            }
+
+            if (paras.TryGetValue("cat_id", out var paramCatId))
+            {
+                if (!Int32.TryParse(paramCatId, out var cat_id))
+                {
+                    return BadRequest(new { status = "Birthday format incorrect" });
+                }
+
+                var temp_u = _context.Users.Where(x => x.CatId == cat_id);
 
                 if (temp_u.Count() != 0)
+                {
                     return BadRequest(new { status = "The Catid is already used" });
-                try
-                {
-                    user.CatId = us.CatId;
-                    await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateException e)
-                {
-                    return NotFound(new { status = "Save failed.", data = e.ToString() });
-                }
-            }
-            return Ok(new { status = "ok" });
-        }
-        
 
-        //GET:/api/users/changeavatar
-
-        [HttpGet("changeavatar")]
-        public async Task<IActionResult> changeavatar(Users us)
-        {
-            var auth = await HttpContext.AuthenticateAsync();
-            if (!auth.Succeeded)
-            {
-                return NotFound(new { status = "not login" });
-            }
-            int uid;
-            var claim = User.FindFirstValue("User");
-            if (!Int32.TryParse(claim, out uid))
-            {
-                return BadRequest(new { status = "validation failed" });
-            }
-            var user = await _context.Users.FindAsync(uid);
-            try
-            {
-                user.Avatar = us.Avatar;
-                await _context.SaveChangesAsync();
-            }
-            catch
-            {
-                return NotFound("上传头像失败");
-            }
-            return Ok(new { status = "ok" });
-        }
-
-        // DELETE: api/Users/5 [需要登录] 更新个人信息
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUsers([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new { status = "invalid", data = ModelState });
+                user.CatId = cat_id;
             }
 
-            var users = await _context.Users.FindAsync(id);
-            if (users == null)
-            {
-                return NotFound(new { status = "not found" });
-            }
-
-            _context.Users.Remove(users);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException e)
             {
-                return NotFound(new { status = "db exception", data = e.ToString() });
+                return NotFound(new { status = "Save failed.", data = e.ToString() });
             }
-            return Ok(new { status = "ok", data = users });
+
+            return Ok(new { status = "ok" });
         }
+
+
+        //GET:/api/users/changeavatar
+
+        // [HttpGet("changeavatar")]
+        // public async Task<IActionResult> changeavatar(Users us)
+        // {
+        //     var auth = await HttpContext.AuthenticateAsync();
+        //     if (!auth.Succeeded)
+        //     {
+        //         return NotFound(new { status = "not login" });
+        //     }
+        //     int uid;
+        //     var claim = User.FindFirstValue("User");
+        //     if (!Int32.TryParse(claim, out uid))
+        //     {
+        //         return BadRequest(new { status = "validation failed" });
+        //     }
+        //     var user = await _context.Users.FindAsync(uid);
+        //     try
+        //     {
+        //         user.Avatar = us.Avatar;
+        //         await _context.SaveChangesAsync();
+        //     }
+        //     catch
+        //     {
+        //         return NotFound("上传头像失败");
+        //     }
+        //     return Ok(new { status = "ok" });
+        // }
+
+        // // DELETE: api/Users/5 [需要登录] 更新个人信息
+        // [HttpDelete("{id}")]
+        // public async Task<IActionResult> DeleteUsers([FromRoute] int id)
+        // {
+        //     if (!ModelState.IsValid)
+        //     {
+        //         return BadRequest(new { status = "invalid", data = ModelState });
+        //     }
+
+        //     var users = await _context.Users.FindAsync(id);
+        //     if (users == null)
+        //     {
+        //         return NotFound(new { status = "not found" });
+        //     }
+
+        //     _context.Users.Remove(users);
+        //     try
+        //     {
+        //         await _context.SaveChangesAsync();
+        //     }
+        //     catch (DbUpdateException e)
+        //     {
+        //         return NotFound(new { status = "db exception", data = e.ToString() });
+        //     }
+        //     return Ok(new { status = "ok", data = users });
+        // }
 
         private bool UsersExists(int id)
         {
