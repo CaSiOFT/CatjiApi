@@ -43,7 +43,7 @@ namespace CatjiApi.Models
             if (!optionsBuilder.IsConfigured)
             {
 //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                //optionsBuilder.UseOracle("Data Source=localhost:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;");
+                //optionsBuilder.UseOracle("Data Source=myweb1008.xyz:1521/orcl;User Id=Catji;Password=tongji;Persist Security Info=True;");
             }
         }
 
@@ -771,7 +771,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.Gender)
                     .HasColumnName("GENDER")
-                    .HasColumnType("VARCHAR2(1)");
+                    .HasColumnType("VARCHAR2(5)");
 
                 entity.Property(e => e.IsBanned)
                     .HasColumnName("IS_BANNED")
