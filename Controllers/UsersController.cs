@@ -322,6 +322,8 @@ namespace CatjiApi.Controllers
                     follower_num = users.FollowerNum,
                     followee_num = users.FollowUs.Count,
                     upload_num = users.Video.Count,
+                    birthday = Extensionmethods.ToTimestamp(users.Birthday),
+                    cat_id = users.CatId
                 }
             });
         }
@@ -407,7 +409,8 @@ namespace CatjiApi.Controllers
                     var convertedDate = Convert.ToInt32(paramBirthday);
                     user.Birthday = convertedDate.ToDateTime();
                 }
-                catch {
+                catch
+                {
                     return BadRequest(new { status = "Date format error" });
                 }
             }
@@ -417,16 +420,16 @@ namespace CatjiApi.Controllers
                 user.Signature = paramSignature;
             }
 
-            if (paras.TryGetValue("avatar", out var paramAvatar))
+            IFormFile avatarFile = paras.Files.GetFile("avatar");
+            if (avatarFile != null)
             {
-                IFormFile avatarFile = paras.Files.GetFile("avatar");
                 string avatarFileName = Guid.NewGuid().ToString() + '.' + avatarFile.FileName.Split('.').Last();
                 string pathToSave = "wwwroot/images" + "/" + avatarFileName;
                 using (var stream = System.IO.File.Create(pathToSave))
                 {
                     await avatarFile.CopyToAsync(stream);
                 }
-                user.Avatar = paramSignature;
+                user.Avatar = avatarFileName;
             }
 
             if (paras.TryGetValue("cat_id", out var paramCatId))
