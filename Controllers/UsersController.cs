@@ -140,7 +140,7 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "Create failed.", data = e.ToString() });
             }
 
-            await RealLogin(user, user0);
+            await RealLogin(user0);
 
             return Ok(new { status = "ok", data = new { usid = user0.Usid } });
         }
@@ -177,7 +177,7 @@ namespace CatjiApi.Controllers
                 return NotFound(new { status = "not found" });
             }
 
-            await RealLogin(user, findUser);
+            await RealLogin(findUser);
 
             return Ok(new { status = "ok" });
         }
@@ -185,7 +185,7 @@ namespace CatjiApi.Controllers
         // 这里必须返回Task不然调用的时候没法await
         // 参数分别为传输用的user对象
         // 和数据库存储的user对象
-        private async Task RealLogin(UserDTO user, Users userDAO)
+        private async Task RealLogin(Users userDAO)
         {
             var claims = new List<Claim> {
                 new Claim ("User", userDAO.Usid.ToString()),
@@ -395,6 +395,8 @@ namespace CatjiApi.Controllers
             if (paras.TryGetValue("password", out var paramPassword))
             {
                 user.Password = paramPassword;
+                user.ChangedTime = DateTime.Now;
+                await RealLogin(user);
             }
 
             if (paras.TryGetValue("gender", out var paramGender))
