@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
-
+using System.Web;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 namespace CatjiApi.Controllers
 {
     [Route("api/[controller]")]
@@ -54,13 +56,27 @@ namespace CatjiApi.Controllers
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
-            var Likevideocomments = _context.Likevideocomment.Where(x => x.Usid == Lbc.Usid && x.Vcid == Lbc.Vcid);
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+            var Likevideocomments = _context.Likevideocomment.Where(x => x.Usid == user.Usid && x.Vcid == Lbc.Vcid);
 
             if (Likevideocomments.Count() != 0)
                 return BadRequest();
 
             var likevideocomment0 = new Likevideocomment();
-            likevideocomment0.Usid = Lbc.Usid;
+            likevideocomment0.Usid = user.Usid;
             likevideocomment0.Vcid = Lbc.Vcid;
             try
             {

@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using System.Web;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace CatjiApi.Controllers
 {
@@ -54,13 +57,27 @@ namespace CatjiApi.Controllers
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
-            var Likeblogcomments = _context.Likeblogcomment.Where(x => x.Usid == Lbc.Usid && x.Bcid == Lbc.Bcid);
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+            var Likeblogcomments = _context.Likeblogcomment.Where(x => x.Usid == user.Usid && x.Bcid == Lbc.Bcid);
 
             if (Likeblogcomments.Count() != 0)
                 return BadRequest();
 
             var likeblogcomment0 = new Likeblogcomment();
-            likeblogcomment0.Usid = Lbc.Usid;
+            likeblogcomment0.Usid = user.Usid;
             likeblogcomment0.Bcid = Lbc.Bcid;
             try
             {
