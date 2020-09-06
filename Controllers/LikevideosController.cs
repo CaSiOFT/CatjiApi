@@ -6,6 +6,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using System.Web;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+
+
 
 namespace CatjiApi.Controllers
 {
@@ -47,21 +52,39 @@ namespace CatjiApi.Controllers
         //POST:api/Likevideos/addLikeV
 
         [HttpPost("addLikeV")]
-        public async Task<IActionResult> addLikeV( Likevideo Lv)
+        public async Task<IActionResult> addLikeV(Likevideo  lv)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
-            
-            var Likevideos = _context.Likevideo.Where(x => x.Usid==Lv.Usid && x.Vid==Lv.Vid);
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+
+           
+
+
+            var Likevideos = _context.Likevideo.Where(x => x.Usid== user.Usid && x.Vid==lv.Vid );
 
             if (Likevideos.Count() != 0)
-                return BadRequest();
+                return BadRequest(new { status = "已点赞", data = ModelState });
 
             var likevideo1 = new Likevideo();
-            likevideo1.Usid = Lv.Usid;
-            likevideo1.Vid = Lv.Vid;
+            likevideo1.Usid = user.Usid;
+            likevideo1.Vid = lv.Vid;
             try
             {
                 _context.Likevideo.Add(likevideo1);
