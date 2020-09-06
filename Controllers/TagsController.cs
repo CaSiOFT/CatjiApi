@@ -70,7 +70,6 @@ namespace CatjiApi.Controllers
                         tag_id = x.TagId,
                         name = x.Name,
                         is_cat = x.CatId
-
                     }
                 });
                 return Ok(new { status = "ok", data = result });

@@ -54,7 +54,7 @@ namespace CatjiApi.Controllers
                 cover = y.Cover,
                 description = y.Description,
                 path = y.Path,
-                create_time = y.CreateTime,
+                create_time = y.CreateTime.ToTimestamp(),
                 time = y.Time,
                 like_num = y.LikeNum,
                 favorite_num = y.FavoriteNum,

@@ -112,7 +112,7 @@ namespace CatjiApi.Controllers
             var result = blogs.Select(x => new
             {
                 bid = x.Bid,
-                create_time = x.CreateTime,
+                create_time = x.CreateTime.ToTimestamp(),
                 content = x.Content,
                 transmit_num = x.TransmitNum,
                 comment_num = x.CommentNum,
@@ -160,7 +160,7 @@ namespace CatjiApi.Controllers
             var result = blogs.Select(x => new
             {
                 bid = x.Bid,
-                create_time = x.CreateTime,
+                create_time = x.CreateTime.ToTimestamp(),
                 content = x.Content,
                 up = new
                 {

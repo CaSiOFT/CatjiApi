@@ -150,7 +150,7 @@ namespace CatjiApi.Controllers
                 cover = x.Cover,
                 description = x.Description,
                 path = x.Path,
-                create_time = x.CreateTime,
+                create_time = x.CreateTime.ToTimestamp(),
                 time = x.Time,
                 like_num = x.LikeNum,
                 favorite_num = x.FavoriteNum,
@@ -214,7 +214,7 @@ namespace CatjiApi.Controllers
                     avatar = x.Us.Avatar
                 },
                 like_num = x.LikeNum,
-                create_time = x.CreateTime,
+                create_time = x.CreateTime.ToTimestamp(),
                 replys = x.InverseParentVc.Select(irv => new
                 {
                     vcid = irv.Vcid,
@@ -226,65 +226,11 @@ namespace CatjiApi.Controllers
                         avatar = irv.Us.Avatar
                     },
                     like_num = irv.LikeNum,
-                    create_time = irv.CreateTime
+                    create_time = irv.CreateTime.ToTimestamp()
                 })
             });
 
             return Ok(new { status = "ok", data = result });
-        }
-
-        [HttpGet("comment2")]
-        public async Task<IActionResult> GetVideoComment2(int vid, int offset)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var comments = _context.Videocomment.Where(vc => vc.Vid == vid).OrderBy(x => x.CreateTime).Skip(offset).Take(10);
-
-            foreach (var comment in comments)
-            {
-                comment.InverseParentVc = await _context.Videocomment.Where(vc => comment.Vcid == vc.ParentVcid).ToListAsync();
-                foreach (var irv in comment.InverseParentVc)
-                {
-                    irv.Us = await _context.Users.FindAsync(irv.Usid);
-                }
-            }
-
-            foreach (var comment in comments)
-            {
-                comment.Us = await _context.Users.FindAsync(comment.Usid);
-            }
-
-            var result = comments.Select(x => new
-            {
-                vcid = x.Vcid,
-                content = x.Content,
-                user = new
-                {
-                    usid = x.Us.Usid,
-                    name = x.Us.Nickname,
-                    avatar = x.Us.Avatar
-                },
-                like_num = x.LikeNum,
-                create_time = x.CreateTime,
-                replys = x.InverseParentVc.Select(irv => new
-                {
-                    vcid = irv.Vcid,
-                    content = irv.Content,
-                    user = new
-                    {
-                        usid = irv.Us.Usid,
-                        name = irv.Us.Nickname,
-                        avatar = irv.Us.Avatar
-                    },
-                    like_num = irv.LikeNum,
-                    create_time = irv.CreateTime
-                })
-            });
-
-            return Ok(result);
         }
 
         // GET: api/Videos/hotlist
@@ -354,7 +300,7 @@ namespace CatjiApi.Controllers
                 cover = video.Cover,
                 view_num = video.WatchNum,
                 comment_num = video.CommentNum,
-                upload_time = video.CreateTime,
+                upload_time = video.CreateTime.ToTimestamp(),
                 url = video.Path,
                 like_num = video.LikeNum,
                 favorite_num = video.FavoriteNum,
@@ -399,7 +345,7 @@ namespace CatjiApi.Controllers
                     cover = x.Cover,
                     view_num = x.WatchNum,
                     comment_num = x.IsBanned,
-                    upload_time = x.CreateTime,
+                    upload_time = x.CreateTime.ToTimestamp(),
                     url = x.Path,
                     like_num = x.LikeNum,
                     favorite_num = x.FavoriteNum,

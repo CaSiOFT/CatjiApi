@@ -188,8 +188,8 @@ namespace CatjiApi.Controllers
         private async Task RealLogin(UserDTO user, Users userDAO)
         {
             var claims = new List<Claim> {
-                new Claim ("User", userDAO.Usid.ToString ()),
-                new Claim ("LastChanged", userDAO.ChangedTime.ToString ())
+                new Claim ("User", userDAO.Usid.ToString()),
+                new Claim ("LastChanged", userDAO.ChangedTime.ToTimestamp().ToString())
             };
 
             //使用证件单元创建一张身份证
@@ -249,7 +249,7 @@ namespace CatjiApi.Controllers
                     nickname = user.Nickname,
                     password = user.Password,
                     email = user.Email,
-                    phone = user.Tel
+                    phone = user.Tel,
                 }
             });
         }
@@ -326,60 +326,6 @@ namespace CatjiApi.Controllers
             });
         }
 
-        // // PUT: api/Users/{id:int} ???
-        // [HttpPut("{id}")]
-        // public async Task<IActionResult> PutUsers([FromRoute] int id, [FromBody] Users users)
-        // {
-        //     if (!ModelState.IsValid)
-        //     {
-        //         return BadRequest(new { status = "invalid", data = ModelState });
-        //     }
-
-        //     if (id != users.Usid)
-        //     {
-        //         return BadRequest(new { status = "usid not match" });
-        //     }
-
-        //     if (!UsersExists(id))
-        //     {
-        //         return NotFound(new { status = "not found" });
-        //     }
-
-        //     _context.Entry(users).State = EntityState.Modified;
-
-        //     try
-        //     {
-        //         await _context.SaveChangesAsync();
-        //     }
-        //     catch (DbUpdateException)
-        //     {
-        //         return BadRequest(new { status = "db exception" });
-        //     }
-
-        //     return Ok(new { status = "ok" });
-        // }
-
-        // // POST: api/Users ???
-        // [HttpPost]
-        // public async Task<IActionResult> PostUsers([FromBody] Users users)
-        // {
-        //     if (!ModelState.IsValid)
-        //     {
-        //         return BadRequest(new { status = "invalid", data = ModelState });
-        //     }
-
-        //     _context.Users.Add(users);
-        //     try
-        //     {
-        //         await _context.SaveChangesAsync();
-        //     }
-        //     catch (DbUpdateException e)
-        //     {
-        //         return NotFound(new { status = "db exception", data = e.ToString() });
-        //     }
-        //     return CreatedAtAction("GetUsers", new { id = users.Usid }, users);
-        // }
-
         // POST: /api/users/updateinfo
         [HttpPost("updateinfo")]
         public async Task<IActionResult> updateinfo(IFormCollection paras)
@@ -403,19 +349,9 @@ namespace CatjiApi.Controllers
 
             var user = await _context.Users.FindAsync(loginUsid);
 
-            if (!paras.TryGetValue("usid", out var paramUsidStr))
+            if (user == null)
             {
-                return BadRequest(new { status = "No usid!" });
-            }
-
-            if (!Int32.TryParse(paramUsidStr, out var paramUsid))
-            {
-                return BadRequest(new { status = "Usid should be a number!" });
-            }
-
-            if (user.Usid != paramUsid)
-            {
-                return BadRequest(new { status = "That's not you!" });
+                return BadRequest(new { status = "No user!" });
             }
 
             if (paras.TryGetValue("email", out var paramEmail) && paramEmail != user.Email)
@@ -466,12 +402,14 @@ namespace CatjiApi.Controllers
 
             if (paras.TryGetValue("birthday", out var paramBirthday))
             {
-                if (!Int32.TryParse(paramBirthday, out var ticks))
+                try
                 {
-                    return BadRequest(new { status = "Birthday format incorrect" });
+                    var convertedDate = Convert.ToInt32(paramBirthday);
+                    user.Birthday = convertedDate.ToDateTime();
                 }
-                DateTime dateTime = new DateTime(ticks);
-                user.Birthday = dateTime;
+                catch {
+                    return BadRequest(new { status = "Date format error" });
+                }
             }
 
             if (paras.TryGetValue("signature", out var paramSignature))

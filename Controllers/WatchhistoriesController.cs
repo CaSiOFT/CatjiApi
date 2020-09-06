@@ -48,14 +48,14 @@ namespace CatjiApi.Controllers
 
             var result = _context.Users.Join(videos, x => x.Usid, y => y.Usid, (x, y) => new
             {
-                watch_time = y.CreateTime,
+                watch_time = y.CreateTime.ToTimestamp(),
                 nickname = x.Nickname,
                 vid = y.V.Vid,
                 title = y.V.Title,
                 cover = y.V.Cover,
                 description = y.V.Description,
                 path = y.V.Path,
-                create_time = y.V.CreateTime,
+                create_time = y.V.CreateTime.ToTimestamp(),
                 time = y.V.Time,
                 like_num = y.V.LikeNum,
                 favorite_num = y.V.FavoriteNum,

@@ -38,4 +38,26 @@ namespace CatjiApi
             return result;
         }
     }
+
+    public static class Extensionmethods
+    {
+        public static int? ToTimestamp(this DateTime? d)
+        {
+            if (d==null)
+                return null;
+            DateTime D = (DateTime)d;
+            return Convert.ToInt32((D.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
+        }
+
+        public static int ToTimestamp(this DateTime d)
+        {
+            return Convert.ToInt32((d.ToUniversalTime().Ticks - 621355968000000000) / 10000000);
+        }
+
+        public static DateTime ToDateTime(this int i)
+        {
+            DateTime dt = new DateTime(i * 10000000L + 621355968000000000).ToLocalTime();
+            return dt;
+        }
+    }
 }
