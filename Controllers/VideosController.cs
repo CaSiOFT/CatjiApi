@@ -64,6 +64,32 @@ namespace CatjiApi.Controllers
             videoPO.Description = paras["desc"];
             videoPO.CreateTime = DateTime.Now;
 
+            try {
+                using (System.Diagnostics.Process pro = new System.Diagnostics.Process())
+                {
+                    pro.StartInfo.UseShellExecute = false;
+                    pro.StartInfo.ErrorDialog = false;
+                    pro.StartInfo.RedirectStandardError = true;
+
+                    pro.StartInfo.FileName = "../ffmpeg/tools/ffmpeg/bin/ffmpeg.exe";
+                    pro.StartInfo.Arguments = " -i " + pathToSave;
+
+                    pro.Start();
+                    System.IO.StreamReader errorreader = pro.StandardError;
+                    pro.WaitForExit(1000);
+
+                    string result = errorreader.ReadToEnd();
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        result = result.Substring(result.IndexOf("Duration: ") + ("Duration: ").Length, ("00:00:00").Length);
+                        var v = result.Split(':');
+                        int t = Convert.ToInt32(v[0]) * 3600 + Convert.ToInt32(v[1]) * 60 + Convert.ToInt32(v[2]);
+                        videoPO.Time = t;
+                    }
+                }
+            }
+            catch { }
+
             try
             {
                 await _context.Video.AddAsync(videoPO);
