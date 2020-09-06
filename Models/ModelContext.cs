@@ -857,7 +857,7 @@ namespace CatjiApi.Models
                 entity.Property(e => e.Title)
                     .IsRequired()
                     .HasColumnName("TITLE")
-                    .HasColumnType("VARCHAR2(20)");
+                    .HasColumnType("VARCHAR2(80)");
 
                 entity.Property(e => e.Usid)
                     .HasColumnName("USID")
