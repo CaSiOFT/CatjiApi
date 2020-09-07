@@ -269,14 +269,14 @@ namespace CatjiApi.Controllers
 
         // GET: /api/Videos/info 查询视频基本信息
         [HttpGet("info")]
-        public async Task<IActionResult> GetVideoInfo(int id)
+        public async Task<IActionResult> GetVideoInfo(int vid)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "error", data = ModelState.ToString() });
             }
 
-            var video = await _context.Video.FindAsync(id);
+            var video = await _context.Video.FindAsync(vid);
 
             if (video == null)
             {
@@ -294,16 +294,18 @@ namespace CatjiApi.Controllers
 
             var user = await _context.Users.FindAsync(video.Usid);
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = new
             {
                 vid = video.Vid,
-                titl = video.Title,
+                title = video.Title,
                 desc = video.Description,
-                cover = video.Cover,
+                cover = baseUrl + "images/" + video.Cover,
                 view_num = video.WatchNum,
                 comment_num = video.CommentNum,
                 upload_time = video.CreateTime.ToTimestamp(),
-                url = video.Path,
+                url = baseUrl + "videos/" + video.Path,
                 like_num = video.LikeNum,
                 favorite_num = video.FavoriteNum,
                 share_num = video.FavoriteNum,
