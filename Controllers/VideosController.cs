@@ -64,7 +64,8 @@ namespace CatjiApi.Controllers
             videoPO.Description = paras["desc"];
             videoPO.CreateTime = DateTime.Now;
 
-            try {
+            try
+            {
                 using (System.Diagnostics.Process pro = new System.Diagnostics.Process())
                 {
                     pro.StartInfo.UseShellExecute = false;
@@ -114,18 +115,17 @@ namespace CatjiApi.Controllers
                         tag = new Tag();
                         tag.Name = v;
                         await _context.Tag.AddAsync(tag);
-                        await _context.SaveChangesAsync();
                     }
                     var vt = new Videotag();
                     vt.TagId = tag.TagId;
                     vt.Vid = videoPO.Vid;
                     await _context.Videotag.AddAsync(vt);
-                    await _context.SaveChangesAsync();
                 }
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
-                return Ok(new
+                return BadRequest(new
                 {
                     status = "Create tag failed.",
                     data = e.ToString()
@@ -249,6 +249,8 @@ namespace CatjiApi.Controllers
                 vt.Us = await _context.Users.FindAsync(vt.Usid);
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = video_top.Select(x => new
             {
                 vid = x.Vid,
@@ -257,9 +259,9 @@ namespace CatjiApi.Controllers
                 {
                     usid = x.Us.Usid,
                     name = x.Us.Nickname,
-                    avatar = x.Us.Avatar
+                    avatar = baseUrl + "images/" + x.Us.Avatar
                 },
-                cover = x.Cover
+                cover = baseUrl + "images/" + x.Cover
             });
 
             return Ok(new { status = "ok", data = result });
