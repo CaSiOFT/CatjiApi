@@ -20,6 +20,31 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpGet("videos")]
+        public async Task<IActionResult> GetVideo(int tag_id, int offset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            var result = _context.Videotag.Where(x => x.TagId == tag_id).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => new
+            {
+                vid = y.Vid,
+                title = y.Title,
+                cover = y.Cover,
+                description = y.Description,
+                path = y.Path,
+                create_time = y.CreateTime.ToTimestamp(),
+                time = y.Time,
+                like_num = y.LikeNum,
+                favorite_num = y.FavoriteNum,
+                watch_num = y.WatchNum,
+                is_banned = y.IsBanned
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
+
         // GET: api/Tags
         [HttpGet]
         public IEnumerable<Tag> GetTag()
@@ -74,7 +99,6 @@ namespace CatjiApi.Controllers
                 });
                 return Ok(new { status = "ok", data = result });
             }
-
         }
         // GET: api/Tags/5
         [HttpGet("{id}")]

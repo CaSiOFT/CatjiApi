@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace CatjiApi.Controllers
 {
@@ -18,6 +20,70 @@ namespace CatjiApi.Controllers
         public FollowsController(ModelContext context)
         {
             _context = context;
+        }
+
+        public class USID
+        {
+            public int usid;
+        }
+
+        [HttpPost("follow")]
+        public async Task<IActionResult> FollowSO(USID FU)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+
+            if (user == null)
+            {
+                return BadRequest(new { status = "No user!" });
+            }
+
+            var usid = user.Usid;
+            var fusid = FU.usid;
+
+            user = await _context.Users.FindAsync(fusid);
+
+            if (user == null)
+            {
+                return BadRequest(new { status = "关注的人不存在" });
+            }
+
+            var FO = await  _context.Follow.FindAsync(usid, fusid);
+
+            if(FO!=null)
+                return BadRequest(new { status = "已经关注此人" });
+
+            FO = new Follow();
+            FO.Usid = usid;
+            FO.FollowUsid = fusid;
+
+            try
+            {
+                await _context.Follow.AddAsync(FO);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return BadRequest(new { status = "关注失败" });
+            }
+
+            return Ok(new { status = "ok" });
         }
 
         //GET:api/follows/followers

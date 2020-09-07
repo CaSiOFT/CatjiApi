@@ -27,6 +27,64 @@ namespace CatjiApi.Controllers
             return _context.Cat;
         }
 
+        [HttpGet("videos")]
+        public async Task<IActionResult> GetVideo(int cat_id, int offset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var t = await _context.Tag.FirstOrDefaultAsync(x => x.CatId == cat_id);
+
+            if (t == null)
+                return NotFound(new { status = "该猫咪不存在对应的tag" });
+
+            var tag_id = t.TagId;
+
+            var result = _context.Videotag.Where(x => x.TagId == tag_id).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => new
+            {
+                vid = y.Vid,
+                title = y.Title,
+                cover = y.Cover,
+                description = y.Description,
+                path = y.Path,
+                create_time = y.CreateTime.ToTimestamp(),
+                time = y.Time,
+                like_num = y.LikeNum,
+                favorite_num = y.FavoriteNum,
+                watch_num = y.WatchNum,
+                is_banned = y.IsBanned
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
+
+        [HttpGet("info")]
+        public async Task<IActionResult> GetInfo(int cat_id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var c = await _context.Cat.FindAsync(cat_id);
+
+            if (c == null)
+                return NotFound(new { status = "猫咪不存在" });
+
+            var result = new
+            {
+                cat_id = cat_id,
+                name = c.Name,
+                description = c.Description,
+                banner = c.Banner,
+                usid = c.Usid
+            };
+
+            return Ok(new { status = "ok", data = result });
+        }
+
         // GET: api/Cats/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCat([FromRoute] int id)
@@ -51,7 +109,7 @@ namespace CatjiApi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { status = "invalid", data = ModelState });
             }
 
             var catList = await _context.Cat.ToListAsync();
@@ -70,8 +128,9 @@ namespace CatjiApi.Controllers
                 c_t = x.Name
             });
 
-            return Ok(result);
+            return Ok(new { status = "ok", data = result });
         }
+
         // PUT: api/Cats/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCat([FromRoute] int id, [FromBody] Cat cat)
