@@ -105,32 +105,32 @@ namespace CatjiApi.Controllers
                 });
             }
 
-            try
-            {
-                foreach (var v in paras["tags"])
-                {
-                    var tag = await _context.Tag.FirstOrDefaultAsync(x => x.Name == v);
-                    if (tag == null)
-                    {
-                        tag = new Tag();
-                        tag.Name = v;
-                        await _context.Tag.AddAsync(tag);
-                    }
-                    var vt = new Videotag();
-                    vt.TagId = tag.TagId;
-                    vt.Vid = videoPO.Vid;
-                    await _context.Videotag.AddAsync(vt);
-                }
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                return BadRequest(new
-                {
-                    status = "Create tag failed.",
-                    data = e.ToString()
-                });
-            }
+            // try
+            // {
+            //     foreach (var v in paras["tags"])
+            //     {
+            //         var tag = await _context.Tag.FirstOrDefaultAsync(x => x.Name == v);
+            //         if (tag == null)
+            //         {
+            //             tag = new Tag();
+            //             tag.Name = v;
+            //             await _context.Tag.AddAsync(tag);
+            //         }
+            //         var vt = new Videotag();
+            //         vt.TagId = tag.TagId;
+            //         vt.Vid = videoPO.Vid;
+            //         await _context.Videotag.AddAsync(vt);
+            //     }
+            //     await _context.SaveChangesAsync();
+            // }
+            // catch (Exception e)
+            // {
+            //     return BadRequest(new
+            //     {
+            //         status = "Create tag failed.",
+            //         data = e.ToString()
+            //     });
+            // }
 
             return Ok(new { status = "ok" });
         }
