@@ -7,6 +7,7 @@ namespace CatjiApi.Models
     {
         public Tag()
         {
+            Blogtag = new HashSet<Blogtag>();
             Videotag = new HashSet<Videotag>();
         }
 
@@ -15,6 +16,7 @@ namespace CatjiApi.Models
         public int? CatId { get; set; }
 
         public Cat Cat { get; set; }
+        public ICollection<Blogtag> Blogtag { get; set; }
         public ICollection<Videotag> Videotag { get; set; }
     }
 }
