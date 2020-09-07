@@ -265,10 +265,12 @@ namespace CatjiApi.Controllers
 
             var user_top = _context.Users.OrderByDescending(x => x.FollowerNum + x.Video.Count()).Take(10);
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = user_top.Select(x => new
             {
                 usid = x.Usid,
-                avatar = x.Avatar,
+                avatar = baseUrl + "images/" + x.Avatar,
                 name = x.Nickname,
                 upload_num = _context.Video.Where(y => y.Usid == x.Usid).Count(),
                 fan_num = x.FollowerNum
