@@ -45,6 +45,42 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok", data = result });
         }
 
+        [HttpGet("blogs")]
+        public async Task<IActionResult> GetBlog(int tag_id, int offset)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var blogs = _context.Blogtag.Where(x => x.TagId == tag_id).Skip(offset).Take(10).Join(_context.Blog, x => x.Bid, y => y.Bid, (x, y) => y);
+            
+            foreach(var v in blogs)
+            {
+                v.Us = await _context.Users.FindAsync(v.Usid);
+                v.Blogimage=await _context.Blogimage.Where(x => x.Bid == v.Bid).ToListAsync();
+            }
+
+            var result = blogs.Select(x => new
+            {
+                bid = x.Bid,
+                time = x.CreateTime.ToTimestamp(),
+                content = x.Content,
+                up = new
+                {
+                    usid = x.Us.Usid,
+                    name = x.Us.Nickname,
+                    avatar = x.Us.Avatar
+                },
+                transmit_num = x.TransmitNum,
+                comment_num = x.CommentNum,
+                like_num = x.LikeNum,
+                images = x.Blogimage.Select(y => y.ImgUrl)
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
+
         // GET: api/Tags
         [HttpGet]
         public IEnumerable<Tag> GetTag()
