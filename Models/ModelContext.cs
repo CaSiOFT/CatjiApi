@@ -808,10 +808,6 @@ namespace CatjiApi.Models
 
                 entity.ToTable("VIDEO");
 
-                entity.HasIndex(e => e.Path)
-                    .HasName("VIDEO__UN_PATH")
-                    .IsUnique();
-
                 entity.HasIndex(e => e.Vid)
                     .HasName("VIDEO_PK")
                     .IsUnique();
