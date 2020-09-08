@@ -109,6 +109,23 @@ namespace CatjiApi.Controllers
                 blog.Blogimage = await _context.Blogimage.Where(x => x.Bid == blog.Bid).ToListAsync();
             }
 
+            bool isLogin = false;
+            int myid = -1;
+            List<int> LikeList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                LikeList = await _context.Likeblog.Where(x => x.Usid == myid).Select(x => x.Bid).ToListAsync();
+            }
+
             var result = blogs.Select(x => new
             {
                 bid = x.Bid,
@@ -117,7 +134,8 @@ namespace CatjiApi.Controllers
                 transmit_num = x.TransmitNum,
                 comment_num = x.CommentNum,
                 like_num = x.LikeNum,
-                images = x.Blogimage.Select(y => y.ImgUrl)
+                images = x.Blogimage.Select(y => y.ImgUrl),
+                ilike = LikeList.Contains(x.Bid) ? 1 : 0
             });
 
             return Ok(new { status = "ok", data = result });
@@ -149,13 +167,15 @@ namespace CatjiApi.Controllers
             var followedUsid = await _context.Follow.Where(x => x.Usid == usid).Select(x => x.FollowUsid).ToListAsync();
             followedUsid.Add(usid);
 
-            var blogs = _context.Blog.Where(x => followedUsid.Contains(x.Usid) && (!only_cat || x.IsPublic != 0)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
+            var blogs = _context.Blog.Where(x => (followedUsid.Contains(x.Usid) || only_cat) && (!only_cat || x.IsPublic != 0)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
 
             foreach (var blog in blogs)
             {
                 blog.Us = await _context.Users.FindAsync(blog.Usid);
                 blog.Blogimage = await _context.Blogimage.Where(x => x.Bid == blog.Bid).ToListAsync();
             }
+
+            var LikeList = await _context.Likeblog.Where(x => x.Usid == usid).Select(x => x.Bid).ToListAsync();
 
             var result = blogs.Select(x => new
             {
@@ -171,7 +191,8 @@ namespace CatjiApi.Controllers
                 transmit_num = x.TransmitNum,
                 comment_num = x.CommentNum,
                 like_num = x.LikeNum,
-                images = x.Blogimage.Select(y => y.ImgUrl)
+                images = x.Blogimage.Select(y => y.ImgUrl),
+                ilike = LikeList.Contains(x.Bid) ? 1 : 0
             });
 
             return Ok(new { status = "ok", data = result });

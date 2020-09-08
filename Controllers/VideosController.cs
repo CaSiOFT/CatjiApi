@@ -203,6 +203,23 @@ namespace CatjiApi.Controllers
                 comment.Us = await _context.Users.FindAsync(comment.Usid);
             }
 
+            bool isLogin = false;
+            int myid = -1;
+            List<int> LikeList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                LikeList = await _context.Likevideocomment.Where(x => x.Usid == myid).Select(x => x.Vcid).ToListAsync();
+            }
+
             var result = comments.Select(x => new
             {
                 vcid = x.Vcid,
@@ -215,6 +232,7 @@ namespace CatjiApi.Controllers
                 },
                 like_num = x.LikeNum,
                 create_time = x.CreateTime.ToTimestamp(),
+                ilike = LikeList.Contains(x.Vcid) ? 1 : 0,
                 replys = x.InverseParentVc.Select(irv => new
                 {
                     vcid = irv.Vcid,
@@ -226,7 +244,8 @@ namespace CatjiApi.Controllers
                         avatar = irv.Us.Avatar
                     },
                     like_num = irv.LikeNum,
-                    create_time = irv.CreateTime.ToTimestamp()
+                    create_time = irv.CreateTime.ToTimestamp(),
+                    ilike = LikeList.Contains(irv.Vcid) ? 1 : 0,
                 })
             });
 
@@ -330,6 +349,25 @@ namespace CatjiApi.Controllers
 
             string baseUrl = Request.Scheme + "://" + Request.Host + "/";
 
+            bool isLogin = false;
+            int myid = -1;
+            int ifavorite = 0;
+            int ilike = 0;
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                ilike = (await _context.Likevideo.FindAsync(myid, vid)) == null ? 0 : 1;
+                ifavorite = (await _context.Favorite.FindAsync(myid, vid)) == null ? 0 : 1;
+            }
+
             var result = new
             {
                 vid = video.Vid,
@@ -351,7 +389,9 @@ namespace CatjiApi.Controllers
                     desc = user.Signature,
                     follow_num = user.FollowerNum,
                     avatar = user.Avatar
-                }
+                },
+                ilike,
+                ifavorite
             };
 
             return Ok(new { status = "ok", data = result });

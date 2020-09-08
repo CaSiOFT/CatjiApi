@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace CatjiApi.Controllers
 {
@@ -54,6 +56,26 @@ namespace CatjiApi.Controllers
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
+
+            bool isLogin = false;
+            int myid = -1;
+            List<int> LikeList = new List<int>();
+            List<int> FavList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                LikeList = await _context.Likevideo.Where(x => x.Usid == myid).Select(x => x.Vid).ToListAsync();
+                FavList = await _context.Favorite.Where(x => x.Usid == myid).Select(x => x.Vid).ToListAsync();
+            }
+
             var result = _context.Videotag.Where(x => x.TagId == tag_id).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => new
             {
                 vid = y.Vid,
@@ -66,7 +88,9 @@ namespace CatjiApi.Controllers
                 like_num = y.LikeNum,
                 favorite_num = y.FavoriteNum,
                 watch_num = y.WatchNum,
-                is_banned = y.IsBanned
+                is_banned = y.IsBanned,
+                ilike = LikeList.Contains(x.Vid) ? 1 : 0,
+                ifavorite = FavList.Contains(x.Vid) ? 1 : 0
             });
 
             return Ok(new { status = "ok", data = result });
@@ -93,6 +117,23 @@ namespace CatjiApi.Controllers
                 v.Blogimage = await _context.Blogimage.Where(x => x.Bid == v.Bid).ToListAsync();
             }
 
+            bool isLogin = false;
+            int myid = -1;
+            List<int> LikeList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                LikeList = await _context.Likeblog.Where(x => x.Usid == myid).Select(x => x.Bid).ToListAsync();
+            }
+
             var result = blogs.Select(x => new
             {
                 bid = x.Bid,
@@ -107,7 +148,8 @@ namespace CatjiApi.Controllers
                 transmit_num = x.TransmitNum,
                 comment_num = x.CommentNum,
                 like_num = x.LikeNum,
-                images = x.Blogimage.Select(y => y.ImgUrl)
+                images = x.Blogimage.Select(y => y.ImgUrl),
+                ilike = LikeList.Contains(x.Bid) ? 1 : 0
             });
 
             return Ok(new { status = "ok", data = result });
