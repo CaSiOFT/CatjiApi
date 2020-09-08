@@ -80,12 +80,17 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var blogs = _context.Blogtag.Where(x => x.TagId == tag_id).Skip(offset).Take(10).Join(_context.Blog, x => x.Bid, y => y.Bid, (x, y) => y);
-            
-            foreach(var v in blogs)
+            var tag = await _context.Tag.FindAsync(tag_id);
+
+            if (tag == null)
+                return NotFound(new { status = "Tag not found!" });
+
+            var blogs = _context.Blog.Where(x => x.Content.Contains("#" + tag.Name + "#")).Skip(offset).Take(10);
+
+            foreach (var v in blogs)
             {
                 v.Us = await _context.Users.FindAsync(v.Usid);
-                v.Blogimage=await _context.Blogimage.Where(x => x.Bid == v.Bid).ToListAsync();
+                v.Blogimage = await _context.Blogimage.Where(x => x.Bid == v.Bid).ToListAsync();
             }
 
             var result = blogs.Select(x => new
