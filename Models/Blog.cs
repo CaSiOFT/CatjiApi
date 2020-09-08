@@ -9,7 +9,6 @@ namespace CatjiApi.Models
         {
             Blogcomment = new HashSet<Blogcomment>();
             Blogimage = new HashSet<Blogimage>();
-            Blogtag = new HashSet<Blogtag>();
             Likeblog = new HashSet<Likeblog>();
             Reportblog = new HashSet<Reportblog>();
         }
@@ -26,7 +25,6 @@ namespace CatjiApi.Models
         public Users Us { get; set; }
         public ICollection<Blogcomment> Blogcomment { get; set; }
         public ICollection<Blogimage> Blogimage { get; set; }
-        public ICollection<Blogtag> Blogtag { get; set; }
         public ICollection<Likeblog> Likeblog { get; set; }
         public ICollection<Reportblog> Reportblog { get; set; }
     }

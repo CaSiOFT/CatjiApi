@@ -20,7 +20,6 @@ namespace CatjiApi.Models
         public virtual DbSet<Blog> Blog { get; set; }
         public virtual DbSet<Blogcomment> Blogcomment { get; set; }
         public virtual DbSet<Blogimage> Blogimage { get; set; }
-        public virtual DbSet<Blogtag> Blogtag { get; set; }
         public virtual DbSet<Cat> Cat { get; set; }
         public virtual DbSet<Favorite> Favorite { get; set; }
         public virtual DbSet<Follow> Follow { get; set; }
@@ -274,35 +273,6 @@ namespace CatjiApi.Models
                     .HasForeignKey(d => d.Bid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("BLOGIMAGE_BLOG_BID_FK");
-            });
-
-            modelBuilder.Entity<Blogtag>(entity =>
-            {
-                entity.HasKey(e => new { e.Bid, e.TagId });
-
-                entity.ToTable("BLOGTAG");
-
-                entity.HasIndex(e => new { e.Bid, e.TagId })
-                    .HasName("SYS_C0010083")
-                    .IsUnique();
-
-                entity.Property(e => e.Bid).HasColumnName("BID");
-
-                entity.Property(e => e.TagId)
-                    .HasColumnName("TAG_ID")
-                    .HasColumnType("NUMBER(6)");
-
-                entity.HasOne(d => d.B)
-                    .WithMany(p => p.Blogtag)
-                    .HasForeignKey(d => d.Bid)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("BLOGTAG_BLOG_BID_FK");
-
-                entity.HasOne(d => d.Tag)
-                    .WithMany(p => p.Blogtag)
-                    .HasForeignKey(d => d.TagId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("BLOGTAG_TAG_TAG_ID_FK");
             });
 
             modelBuilder.Entity<Cat>(entity =>
