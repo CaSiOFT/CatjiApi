@@ -52,7 +52,7 @@ namespace CatjiApi.Controllers
         //POST:api/Likevideos/addLikeV
 
         [HttpPost("addLikeV")]
-        public async Task<IActionResult> addLikeV(Likevideo  lv)
+        public async Task<IActionResult> addLikeV(Likevideo lv)
         {
             if (!ModelState.IsValid)
             {
@@ -74,9 +74,6 @@ namespace CatjiApi.Controllers
 
             var user = await _context.Users.FindAsync(loginUsid);
 
-           
-
-
             var Likevideos = _context.Likevideo.Where(x => x.Usid== user.Usid && x.Vid==lv.Vid );
 
             if (Likevideos.Count() != 0)
@@ -96,6 +93,47 @@ namespace CatjiApi.Controllers
             }
 
             return Ok(new { status = "ok", data = new { usid = likevideo1.Usid,vid= likevideo1.Vid } });
+        }
+
+        [HttpPost("UnlikeV")]
+        public async Task<IActionResult> UnlikeV(Likevideo lv)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+
+            var Likevideos = await _context.Likevideo.FirstOrDefaultAsync(x => x.Usid == user.Usid && x.Vid == lv.Vid);
+
+            if (Likevideos == null)
+                return BadRequest(new { status = "未点赞" });
+
+            try
+            {
+                _context.Likevideo.Remove(Likevideos);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Remove failed.", data = e.ToString() });
+            }
+
+            return Ok(new { status = "ok" });
         }
 
         // GET: api/Likevideos/5

@@ -20,6 +20,33 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpGet("hotlist")]
+        public async Task<IActionResult> GetTagTop()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var taglist = await _context.Tag.ToListAsync();
+
+            var rndList = Tools.RandomList(10, taglist.Count);
+
+            List<Tag> tag_top = new List<Tag>();
+
+            foreach (var v in rndList)
+                tag_top.Add(taglist[v]);
+
+            var result = tag_top.Select(x => new
+            {
+                tag_id = x.TagId,
+                cat_id = x.CatId,
+                name = x.Name
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
+
         [HttpGet("videos")]
         public async Task<IActionResult> GetVideo(int tag_id, int offset)
         {

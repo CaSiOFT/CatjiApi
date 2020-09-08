@@ -55,7 +55,7 @@ namespace CatjiApi.Controllers
             var Likeblogs = _context.Likeblog.Where(x => x.Usid == user.Usid && x.Bid == Lb.Bid);
 
             if (Likeblogs.Count() != 0)
-                return BadRequest();
+                return BadRequest(new { status = "Already liked!" });
 
             var likeblog0 = new Likeblog();
             likeblog0.Usid = user.Usid;
@@ -71,6 +71,45 @@ namespace CatjiApi.Controllers
             }
             return Ok(new { status = "ok", data = new { usid = likeblog0.Usid, bid = likeblog0.Bid} });
         }
+
+        [HttpPost("UnlikeB")]
+        public async Task<IActionResult> UnlikeB(Likeblog Lb)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+            var Likeblogs = await _context.Likeblog.FirstOrDefaultAsync(x => x.Usid == user.Usid && x.Bid == Lb.Bid);
+
+            if (Likeblogs == null)
+                return BadRequest(new { status = "Not already liked!" });
+
+            try
+            {
+                _context.Likeblog.Remove(Likeblogs);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Remove failed.", data = e.ToString() });
+            }
+            return Ok(new { status = "ok" });
+        }
+
         // GET: api/Likeblogs/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLikeblog([FromRoute] int id)

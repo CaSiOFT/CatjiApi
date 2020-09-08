@@ -22,6 +22,91 @@ namespace CatjiApi.Controllers
             _context = context;
         }
 
+        [HttpPost("addFav")]
+        public async Task<IActionResult> addFav(Favorite lv)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+
+            var Fav = await _context.Favorite.FirstOrDefaultAsync(x => x.Usid == user.Usid && x.Vid == lv.Vid);
+
+            if (Fav != null)
+                return BadRequest(new { status = "已收藏", data = ModelState });
+
+            Fav = new Favorite();
+            Fav.Usid = user.Usid;
+            Fav.Vid = lv.Vid;
+            try
+            {
+                await _context.Favorite.AddAsync(Fav);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Create failed.", data = e.ToString() });
+            }
+
+            return Ok(new { status = "ok" });
+        }
+
+        [HttpPost("UnFav")]
+        public async Task<IActionResult> UnFav(Favorite lv)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+
+            var Fav = await _context.Favorite.FirstOrDefaultAsync(x => x.Usid == user.Usid && x.Vid == lv.Vid);
+
+            if (Fav == null)
+                return BadRequest(new { status = "未收藏", data = ModelState });
+
+            try
+            {
+                _context.Favorite.Remove(Fav);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Remove failed.", data = e.ToString() });
+            }
+
+            return Ok(new { status = "ok" });
+        }
+
         [HttpGet("info")]
         public async Task<IActionResult> GetFavoriteInfo(int offset)
         {

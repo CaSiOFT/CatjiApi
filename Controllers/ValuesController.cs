@@ -52,11 +52,11 @@ namespace CatjiApi.Controllers
         }
 
         // GET api/values/test
-        [HttpGet("test")]
-        public ActionResult<IEnumerable<Test>> Get2()
+        [HttpPost("test")]
+        public ActionResult<IEnumerable<Test>> Get2(Test T)
         {
             //return new string[] { "value1", "value2" };
-            return new Test[] { new Test(1), new Test(2) };
+            return Ok(T.x2);
         }
 
         // GET api/values/5

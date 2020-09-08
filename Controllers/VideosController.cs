@@ -267,6 +267,40 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok", data = result });
         }
 
+        // GET: api/Videos/hotlist
+        [HttpGet("newlist")]
+        public async Task<IActionResult> GetVNew()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var video_top = _context.Video.OrderByDescending(x => x.CreateTime).Take(10);
+
+            foreach (var vt in video_top)
+            {
+                vt.Us = await _context.Users.FindAsync(vt.Usid);
+            }
+
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
+            var result = video_top.Select(x => new
+            {
+                vid = x.Vid,
+                name = x.Title,
+                up = new
+                {
+                    usid = x.Us.Usid,
+                    name = x.Us.Nickname,
+                    avatar = baseUrl + "images/" + x.Us.Avatar
+                },
+                cover = baseUrl + "images/" + x.Cover
+            });
+
+            return Ok(new { status = "ok", data = result });
+        }
+
         // GET: /api/Videos/info 查询视频基本信息
         [HttpGet("info")]
         public async Task<IActionResult> GetVideoInfo(int vid)
@@ -332,7 +366,7 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var keys = _context.Video.Where(x => x.Description.Contains(keyword)).Skip(page);
+            var keys = _context.Video.Where(x => x.Description.Contains(keyword) || x.Title.Contains(keyword)).Skip(page);
             if (await keys.CountAsync() == 0)
             {
                 return NotFound(new { status = "未能找到相关视频" });

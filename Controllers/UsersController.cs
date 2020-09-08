@@ -42,7 +42,7 @@ namespace CatjiApi.Controllers
             }
             if (only_cat == true)
             {
-                var keys = _context.Users.Where(x => x.Signature.Contains(keyword) && x.CatId != 0).Skip(page);
+                var keys = _context.Users.Where(x => (x.Signature.Contains(keyword) || x.Nickname.Contains(keyword)) && x.CatId != 0).Skip(page);
                 if (await keys.CountAsync() == 0)
                 {
                     return NotFound(new { status = "未能找到相关用户" });

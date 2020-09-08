@@ -86,6 +86,61 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok" });
         }
 
+        [HttpPost("unfollow")]
+        public async Task<IActionResult> UnFollowSO(USID FU)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+
+            if (user == null)
+            {
+                return BadRequest(new { status = "No user!" });
+            }
+
+            var usid = user.Usid;
+            var fusid = FU.usid;
+
+            user = await _context.Users.FindAsync(fusid);
+
+            if (user == null)
+            {
+                return BadRequest(new { status = "关注的人不存在" });
+            }
+
+            var FO = await _context.Follow.FindAsync(usid, fusid);
+
+            if (FO == null)
+                return BadRequest(new { status = "未关注此人" });
+
+            try
+            {
+                _context.Follow.Remove(FO);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return BadRequest(new { status = "取消关注失败" });
+            }
+
+            return Ok(new { status = "ok" });
+        }
+
         //GET:api/follows/followers
         [HttpGet("followers")]
         public async Task<IActionResult> Getfollowers(int offset, int Usid)
