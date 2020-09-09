@@ -353,6 +353,7 @@ namespace CatjiApi.Controllers
             int myid = -1;
             int ifavorite = 0;
             int ilike = 0;
+            int ifollow = 0;
 
             var auth = await HttpContext.AuthenticateAsync();
             if (auth.Succeeded)
@@ -366,6 +367,7 @@ namespace CatjiApi.Controllers
             {
                 ilike = (await _context.Likevideo.FindAsync(myid, vid)) == null ? 0 : 1;
                 ifavorite = (await _context.Favorite.FindAsync(myid, vid)) == null ? 0 : 1;
+                ifollow = (await _context.Follow.FindAsync(myid, user.Usid)) == null ? 0 : 1;
             }
 
             var result = new
@@ -388,7 +390,8 @@ namespace CatjiApi.Controllers
                     name = user.Nickname,
                     desc = user.Signature,
                     follow_num = user.FollowerNum,
-                    avatar = user.Avatar
+                    avatar = user.Avatar,
+                    ifollow
                 },
                 ilike,
                 ifavorite
