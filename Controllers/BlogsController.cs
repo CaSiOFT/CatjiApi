@@ -163,11 +163,19 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "validation failed" });
             }
 
+            IQueryable<Blog> blogs;
             //var followedUsid = await _context.Follow.Where(x => x.Usid == usid && (!only_cat || _context.Users.Find(x.FollowUsid).CatId != null)).Select(x => x.FollowUsid).ToListAsync();
-            var followedUsid = await _context.Follow.Where(x => x.Usid == usid).Select(x => x.FollowUsid).ToListAsync();
-            followedUsid.Add(usid);
 
-            var blogs = _context.Blog.Where(x => (followedUsid.Contains(x.Usid) || only_cat) && (!only_cat || x.IsPublic != 0)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
+            if (!only_cat)
+            {
+                var followedUsid = await _context.Follow.Where(x => x.Usid == usid).Select(x => x.FollowUsid).ToListAsync();
+                followedUsid.Add(usid);
+                blogs = _context.Blog.Where(x => followedUsid.Contains(x.Usid)).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
+            }
+            else
+            {
+                blogs = _context.Blog.Where(x => x.IsPublic != 0).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10);
+            }
 
             foreach (var blog in blogs)
             {
