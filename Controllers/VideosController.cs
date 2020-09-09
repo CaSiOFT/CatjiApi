@@ -402,37 +402,30 @@ namespace CatjiApi.Controllers
 
         //Get:api/videos/search
         [HttpGet("search")]
-        public async Task<IActionResult> Getvideosearch(int page, string keyword)
+        public async Task<IActionResult> Getvideosearch(int offset, string keyword)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            var keys = _context.Video.Where(x => x.Description.Contains(keyword) || x.Title.Contains(keyword)).Skip(page);
-            if (await keys.CountAsync() == 0)
-            {
-                return NotFound(new { status = "未能找到相关视频" });
-            }
+            var keys = _context.Video.Where(x => x.Description.Contains(keyword) || x.Title.Contains(keyword)).Skip(offset).Take(10);
 
             var result = keys.Select(x => new
             {
-                status = "ok",
-                data = new
-                {
-                    vid = x.Vid,
-                    title = x.Title,
-                    desc = x.Description,
-                    cover = x.Cover,
-                    view_num = x.WatchNum,
-                    comment_num = x.IsBanned,
-                    upload_time = x.CreateTime.ToTimestamp(),
-                    url = x.Path,
-                    like_num = x.LikeNum,
-                    favorite_num = x.FavoriteNum,
-                    share_num = 0
-                }
+                vid = x.Vid,
+                title = x.Title,
+                desc = x.Description,
+                cover = x.Cover,
+                view_num = x.WatchNum,
+                comment_num = x.IsBanned,
+                upload_time = x.CreateTime.ToTimestamp(),
+                url = x.Path,
+                like_num = x.LikeNum,
+                favorite_num = x.FavoriteNum,
+                share_num = 0
             });
+
             return Ok(new { status = "ok", data = result });
         }
 

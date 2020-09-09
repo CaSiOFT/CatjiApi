@@ -182,33 +182,22 @@ namespace CatjiApi.Controllers
         }
         //Get:api/tags/search
         [HttpGet("search")]
-        public async Task<IActionResult> Gettagsearch(int page, string keyword)
+        public async Task<IActionResult> Gettagsearch(int offset, string keyword)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
-            var keys = _context.Tag.Where(x => x.Name.Contains(keyword)).Skip(page);
-            if (await keys.CountAsync() == 0)
-            {
-                return NotFound(new { status = "未能找到相关猫咪" });
-            }
-            else
-            {
 
-                var result = keys.Select(x => new
+            var keys = _context.Tag.Where(x => x.Name.Contains(keyword)).Skip(offset).Take(10);
 
-                {
-                    status = "ok",
-                    data = new
-                    {
-                        tag_id = x.TagId,
-                        name = x.Name,
-                        is_cat = x.CatId
-                    }
-                });
-                return Ok(new { status = "ok", data = result });
-            }
+            var result = keys.Select(x => new
+            {
+                tag_id = x.TagId,
+                name = x.Name,
+                catid = x.CatId
+            });
+            return Ok(new { status = "ok", data = result });
         }
         // GET: api/Tags/5
         [HttpGet("{id}")]

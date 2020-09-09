@@ -40,60 +40,37 @@ namespace CatjiApi.Controllers
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
-            if (only_cat == true)
+
+            bool isLogin = false;
+            int myid = -1;
+            List<int> FollowList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
             {
-                var keys = _context.Users.Where(x => (x.Signature.Contains(keyword) || x.Nickname.Contains(keyword)) && x.CatId != 0).Skip(page);
-                if (await keys.CountAsync() == 0)
-                {
-                    return NotFound(new { status = "未能找到相关用户" });
-                }
-
-                else
-                {
-                    var result = keys.Select(x => new
-
-                    {
-                        status = "ok",
-                        data = new
-                        {
-                            Vid = x.Usid,
-                            name = x.Nickname,
-                            desc = x.Signature,
-                            follow_num = x.FollowerNum,
-                            avatar = x.Avatar
-
-                        }
-                    });
-                    return Ok(new { status = "ok", data = result });
-                }
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
             }
-            else
+
+            if (isLogin)
             {
-                var keys = _context.Users.Where(x => x.Signature.Contains(keyword)).Skip(page);
-                if (await keys.CountAsync() == 0)
-                {
-                    return NotFound(new { status = "未能找到相关用户" });
-                }
-
-                else
-                {
-                    var result = keys.Select(x => new
-
-                    {
-                        status = "ok",
-                        data = new
-                        {
-                            Vid = x.Usid,
-                            name = x.Nickname,
-                            desc = x.Signature,
-                            follow_num = x.FollowerNum,
-                            avatar = x.Avatar
-
-                        }
-                    });
-                    return Ok(new { status = "ok", data = result });
-                }
+                FollowList = await _context.Follow.Where(x => x.Usid == myid).Select(x => x.FollowUsid).ToListAsync();
             }
+
+            var keys = _context.Users.Where(x => (x.Signature.Contains(keyword) || x.Nickname.Contains(keyword)) && (x.CatId != null || !only_cat)).Skip(page).Take(10);
+            var result = keys.Select(x => new
+            {
+                usid = x.Usid,
+                name = x.Nickname,
+                desc = x.Signature,
+                follow_num = x.FollowerNum,
+                avatar = x.Avatar,
+                work_num = _context.Video.Where(y => y.Usid == x.Usid).Count(),
+                ifollow = FollowList.Contains(x.Usid) ? 1 : 0
+            });
+
+            return Ok(new { status = "ok", data = result });
         }
 
         // POST: /api/users/register 注册
