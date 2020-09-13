@@ -46,13 +46,15 @@ namespace CatjiApi.Controllers
 
             var videos = _context.Watchhistory.Where(x => x.Usid == usid).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => x);
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = _context.Users.Join(videos, x => x.Usid, y => y.Usid, (x, y) => new
             {
                 watch_time = y.CreateTime.ToTimestamp(),
                 nickname = x.Nickname,
                 vid = y.V.Vid,
                 title = y.V.Title,
-                cover = y.V.Cover,
+                cover = baseUrl + "images/" + y.V.Cover,
                 description = y.V.Description,
                 path = y.V.Path,
                 create_time = y.V.CreateTime.ToTimestamp(),
