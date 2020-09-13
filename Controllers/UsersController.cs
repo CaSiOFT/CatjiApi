@@ -31,6 +31,7 @@ namespace CatjiApi.Controllers
             public string password;
             public string email;
             public string phone;
+            public bool is_cat;
         }
         //GET:api/Users/search 根据关键词查询用户信息
         [HttpGet("search")]
@@ -98,6 +99,22 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "replicated" });
             }
 
+            Cat cat;
+            Tag tag;
+
+            if (user.is_cat)
+            {
+                cat = await _context.Cat.FirstOrDefaultAsync(x => x.Name == user.nickname);
+
+                if (cat != null)
+                    return BadRequest(new { status = "Replicated cat name!" });
+
+                tag = await _context.Tag.FirstOrDefaultAsync(x => x.Name == user.nickname);
+
+                if (tag != null)
+                    return BadRequest(new { status = "Replicated tag name!" });
+            }
+
             var user0 = new Users();
             user0.Nickname = user.nickname;
             user0.Tel = user.phone;
@@ -109,12 +126,45 @@ namespace CatjiApi.Controllers
             try
             {
                 _context.Users.Add(user0);
-                //_context.SaveChanges();
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException e)
             {
                 return BadRequest(new { status = "Create failed.", data = e.ToString() });
+            }
+
+            if (user.is_cat)
+            {
+                cat = new Cat();
+                cat.Usid = user0.Usid;
+                cat.Name = user0.Nickname;
+
+                try
+                {
+                    _context.Cat.Add(cat);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException e)
+                {
+                    return BadRequest(new { status = "Create cat failed.", data = e.ToString() });
+                }
+
+                user0.CatId = cat.CatId;
+                await _context.SaveChangesAsync();
+
+                tag = new Tag();
+                tag.CatId = cat.CatId;
+                tag.Name = cat.Name;
+
+                try
+                {
+                    _context.Tag.Add(tag);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException e)
+                {
+                    return BadRequest(new { status = "Create tag failed.", data = e.ToString() });
+                }
             }
 
             await RealLogin(user0);
