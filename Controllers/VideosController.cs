@@ -354,12 +354,12 @@ namespace CatjiApi.Controllers
             }
 
             var video = await _context.Video.FindAsync(vid);
-            
+
             if (video == null)
             {
                 return NotFound(new { status = "not found" });
             }
-            
+
             var tags = _context.Videotag
                 .Where(x => x.Vid == video.Vid)
                 .Join(_context.Tag, x => x.TagId, y => y.TagId, (x, y) => new
@@ -408,7 +408,7 @@ namespace CatjiApi.Controllers
                 ifavorite = (await _context.Favorite.FindAsync(myid, vid)) == null ? 0 : 1;
                 ifollow = (await _context.Follow.FindAsync(myid, user.Usid)) == null ? 0 : 1;
             }
-            
+
             var result = new
             {
                 vid = video.Vid,
@@ -461,7 +461,7 @@ namespace CatjiApi.Controllers
 
         //Get:api/videos/search
         [HttpGet("search")]
-        public async Task<IActionResult> Getvideosearch(int offset, string keyword)
+        public IActionResult Getvideosearch(int offset, string keyword)
         {
             if (!ModelState.IsValid)
             {
@@ -470,16 +470,18 @@ namespace CatjiApi.Controllers
 
             var keys = _context.Video.Where(x => x.Description.Contains(keyword) || x.Title.Contains(keyword)).Skip(offset).Take(10);
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = keys.Select(x => new
             {
                 vid = x.Vid,
                 title = x.Title,
                 desc = x.Description,
-                cover = x.Cover,
+                cover = baseUrl + "images/" + x.Cover,
                 view_num = x.WatchNum,
                 comment_num = x.IsBanned,
                 upload_time = x.CreateTime.ToTimestamp(),
-                url = x.Path,
+                url = baseUrl + "videos/" + x.Path,
                 like_num = x.LikeNum,
                 favorite_num = x.FavoriteNum,
                 share_num = 0

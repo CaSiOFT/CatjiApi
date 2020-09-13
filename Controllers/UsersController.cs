@@ -60,13 +60,16 @@ namespace CatjiApi.Controllers
             }
 
             var keys = _context.Users.Where(x => (x.Signature.Contains(keyword) || x.Nickname.Contains(keyword)) && (x.CatId != null || !only_cat)).Skip(page).Take(10);
+
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = keys.Select(x => new
             {
                 usid = x.Usid,
                 name = x.Nickname,
                 desc = x.Signature,
                 follow_num = x.FollowerNum,
-                avatar = x.Avatar,
+                avatar = baseUrl + "images/" + x.Avatar,
                 work_num = _context.Video.Where(y => y.Usid == x.Usid).Count(),
                 ifollow = FollowList.Contains(x.Usid) ? 1 : 0
             });
