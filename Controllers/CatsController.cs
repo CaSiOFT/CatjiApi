@@ -212,9 +212,9 @@ namespace CatjiApi.Controllers
 
             var result = cat_top.Select(x => new
             {
-                c_id = x.CatId,
-                c_p = x.Banner,
-                c_t = x.Name
+                cat_id = x.CatId,
+                banner = x.Banner,
+                name = x.Name
             });
 
             return Ok(new { status = "ok", data = result });

@@ -151,6 +151,8 @@ namespace CatjiApi.Controllers
                 LikeList = await _context.Likeblog.Where(x => x.Usid == myid).Select(x => x.Bid).ToListAsync();
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = blogs.Select(x => new
             {
                 bid = x.Bid,
@@ -159,7 +161,7 @@ namespace CatjiApi.Controllers
                 transmit_num = x.TransmitNum,
                 comment_num = x.CommentNum,
                 like_num = x.LikeNum,
-                images = x.Blogimage.Select(y => y.ImgUrl),
+                images = x.Blogimage.Select(y => baseUrl + "images/" + y.ImgUrl),
                 ilike = LikeList.Contains(x.Bid) ? 1 : 0
             });
 
