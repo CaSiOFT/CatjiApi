@@ -359,19 +359,7 @@ namespace CatjiApi.Controllers
             {
                 return NotFound(new { status = "not found" });
             }
-
-            //修改播放量
-            try
-            {
-                video.WatchNum++;
-                await _context.SaveChangesAsync();
-            }
-            catch
-            {
-                return NotFound("Modification Failed");
-            }
             
-
             var tags = _context.Videotag
                 .Where(x => x.Vid == video.Vid)
                 .Join(_context.Tag, x => x.TagId, y => y.TagId, (x, y) => new
@@ -404,19 +392,14 @@ namespace CatjiApi.Controllers
                 }
                 var user_now = await _context.Users.FindAsync(loginUsid);
                 //添加观看历史
+                var wh0 = await _context.Watchhistory.FirstOrDefaultAsync(x => x.Usid == loginUsid && x.Vid == video.Vid);
+                if (wh0 != null)
+                    _context.Watchhistory.Remove(wh0);
                 var w_h = new Watchhistory();
                 w_h.CreateTime = DateTime.Now;
                 w_h.Usid = user_now.Usid;
                 w_h.Vid = video.Vid;
-                try
-                {
-                    _context.Watchhistory.Add(w_h);
-                    await _context.SaveChangesAsync();
-                }
-                catch
-                {
-                    return NotFound("Create failed.");
-                }
+                _context.Watchhistory.Add(w_h);
             }
 
             if (isLogin)
@@ -425,11 +408,6 @@ namespace CatjiApi.Controllers
                 ifavorite = (await _context.Favorite.FindAsync(myid, vid)) == null ? 0 : 1;
                 ifollow = (await _context.Follow.FindAsync(myid, user.Usid)) == null ? 0 : 1;
             }
-            
-
-            
-
-            
             
             var result = new
             {
@@ -457,6 +435,26 @@ namespace CatjiApi.Controllers
                 ilike,
                 ifavorite
             };
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return NotFound(new { status = "Create History failed.", data = result });
+            }
+
+            //修改播放量
+            try
+            {
+                video.WatchNum++;
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return NotFound(new { status = "Modification Failed.", data = result });
+            }
 
             return Ok(new { status = "ok", data = result });
         }
