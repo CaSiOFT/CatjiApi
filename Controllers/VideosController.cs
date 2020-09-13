@@ -286,7 +286,7 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok", data = result });
         }
 
-        // GET: api/Videos/hotlist
+        // GET: api/Videos/newlist
         [HttpGet("newlist")]
         public async Task<IActionResult> GetVNew()
         {
