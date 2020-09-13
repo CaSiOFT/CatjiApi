@@ -167,13 +167,15 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "validation failed" });
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = _context.Video.Where(x => x.Usid == usid).OrderByDescending(x => x.CreateTime).Skip(offset).Take(10).Select(x => new
             {
                 vid = x.Vid,
                 title = x.Title,
-                cover = x.Cover,
+                cover = baseUrl + "images/" + x.Cover,
                 description = x.Description,
-                path = x.Path,
+                path = baseUrl + "videos/" + x.Path,
                 create_time = x.CreateTime.ToTimestamp(),
                 time = x.Time,
                 like_num = x.LikeNum,

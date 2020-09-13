@@ -131,12 +131,14 @@ namespace CatjiApi.Controllers
 
             var videos = _context.Favorite.Where(x => x.Usid == usid).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => y);
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = _context.Users.Join(videos, x => x.Usid, y => y.Usid, (x, y) => new
             {
                 nickname = x.Nickname,
                 vid = y.Vid,
                 title = y.Title,
-                cover = y.Cover,
+                cover = baseUrl + "images/" + y.Cover,
                 description = y.Description,
                 path = y.Path,
                 create_time = y.CreateTime.ToTimestamp(),
