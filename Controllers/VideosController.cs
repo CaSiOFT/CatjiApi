@@ -330,11 +330,23 @@ namespace CatjiApi.Controllers
             }
 
             var video = await _context.Video.FindAsync(vid);
-
+            
             if (video == null)
             {
                 return NotFound(new { status = "not found" });
             }
+
+            //修改播放量
+            try
+            {
+                video.WatchNum++;
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return NotFound("Modification Failed");
+            }
+            
 
             var tags = _context.Videotag
                 .Where(x => x.Vid == video.Vid)
@@ -345,6 +357,7 @@ namespace CatjiApi.Controllers
                     cat_id = y.CatId
                 });
 
+            //上传视频的user
             var user = await _context.Users.FindAsync(video.Usid);
 
             string baseUrl = Request.Scheme + "://" + Request.Host + "/";
@@ -361,6 +374,25 @@ namespace CatjiApi.Controllers
                 var claim = User.FindFirstValue("User");
                 if (int.TryParse(claim, out myid))
                     isLogin = true;
+                if (!Int32.TryParse(claim, out var loginUsid))
+                {
+                    return BadRequest(new { status = "validation failed" });
+                }
+                var user_now = await _context.Users.FindAsync(loginUsid);
+                //添加观看历史
+                var w_h = new Watchhistory();
+                w_h.CreateTime = DateTime.Now;
+                w_h.Usid = user_now.Usid;
+                w_h.Vid = video.Vid;
+                try
+                {
+                    _context.Watchhistory.Add(w_h);
+                    await _context.SaveChangesAsync();
+                }
+                catch
+                {
+                    return NotFound("Create failed.");
+                }
             }
 
             if (isLogin)
@@ -369,7 +401,12 @@ namespace CatjiApi.Controllers
                 ifavorite = (await _context.Favorite.FindAsync(myid, vid)) == null ? 0 : 1;
                 ifollow = (await _context.Follow.FindAsync(myid, user.Usid)) == null ? 0 : 1;
             }
+            
 
+            
+
+            
+            
             var result = new
             {
                 vid = video.Vid,
