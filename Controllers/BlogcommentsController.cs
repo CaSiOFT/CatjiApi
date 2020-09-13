@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace CatjiApi.Controllers
 {
@@ -18,6 +20,48 @@ namespace CatjiApi.Controllers
         public BlogcommentsController(ModelContext context)
         {
             _context = context;
+        }
+
+        [HttpPost("addBC")]
+        public async Task<IActionResult> addBC(Blogcomment bc0)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+
+            var BC = new Blogcomment();
+            BC.Usid = user.Usid;
+            BC.Bid = bc0.Bid;
+            BC.Content = bc0.Content;
+            BC.CreateTime = DateTime.Now;
+
+            try
+            {
+                _context.Blogcomment.Add(BC);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Create failed.", data = e.ToString() });
+            }
+
+            return Ok(new { status = "ok" });
         }
 
         // GET: api/Blogcomments

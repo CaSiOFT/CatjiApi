@@ -285,8 +285,7 @@ namespace CatjiApi.Models
 
                 entity.Property(e => e.CatId)
                     .HasColumnName("CAT_ID")
-                    .HasColumnType("NUMBER(6)")
-                    .ValueGeneratedNever();
+                    .HasColumnType("NUMBER(6)");
 
                 entity.Property(e => e.Banner)
                     .HasColumnName("BANNER")
@@ -999,6 +998,8 @@ namespace CatjiApi.Models
             modelBuilder.HasSequence("BID_SEQ");
 
             modelBuilder.HasSequence("BRID_SEQ");
+
+            modelBuilder.HasSequence("CAT_ID_SEQ");
 
             modelBuilder.HasSequence("MID_SEQ");
 

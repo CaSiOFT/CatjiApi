@@ -132,6 +132,30 @@ namespace CatjiApi.Controllers
                 });
             }
 
+            try
+            {
+                foreach (var v in paras["catags"])
+                {
+                    var tag = await _context.Tag.FirstOrDefaultAsync(x => x.Name == v);
+                    if (tag != null && tag.CatId != null)
+                    {
+                        var vt = new Videotag();
+                        vt.TagId = tag.TagId;
+                        vt.Vid = videoPO.Vid;
+                        await _context.Videotag.AddAsync(vt);
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new
+                {
+                    status = "Create catag failed.",
+                    data = e.ToString()
+                });
+            }
+
             return Ok(new { status = "ok" });
         }
 
