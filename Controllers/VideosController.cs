@@ -429,7 +429,7 @@ namespace CatjiApi.Controllers
                     name = user.Nickname,
                     desc = user.Signature,
                     follow_num = user.FollowerNum,
-                    avatar = user.Avatar,
+                    avatar = baseUrl + "images/" + user.Avatar,
                     ifollow
                 },
                 ilike,
