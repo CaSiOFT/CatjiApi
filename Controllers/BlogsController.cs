@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using CatjiApi.Models;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace CatjiApi.Controllers
 {
@@ -61,6 +62,30 @@ namespace CatjiApi.Controllers
                 return BadRequest(new
                 {
                     status = "Create failed.",
+                    data = e.ToString()
+                });
+            }
+
+            MatchCollection mc = Regex.Matches(blogPO.Content, @"(?<=\#)[\s\S]*?(?=\#)");
+            try
+            {
+                for (int i = 0; i < mc.Count; i += 2)
+                {
+                    var tag = await _context.Tag.FirstOrDefaultAsync(x => x.Name == mc[i].ToString());
+                    if (tag == null)
+                    {
+                        tag = new Tag();
+                        tag.Name = mc[i].ToString();
+                        await _context.Tag.AddAsync(tag);
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new
+                {
+                    status = "Create tag failed.",
                     data = e.ToString()
                 });
             }
