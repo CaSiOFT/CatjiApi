@@ -108,25 +108,11 @@ namespace CatjiApi.Controllers
         }
 
         [HttpGet("info")]
-        public async Task<IActionResult> GetFavoriteInfo(int offset)
+        public IActionResult GetFavoriteInfo(int usid, int offset)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new { status = "invalid", data = ModelState });
-            }
-
-            var auth = await HttpContext.AuthenticateAsync();
-            if (!auth.Succeeded)
-            {
-                return BadRequest(new { status = "not login" });
-            }
-
-            var claim = User.FindFirstValue("User");
-            int usid;
-
-            if (!int.TryParse(claim, out usid))
-            {
-                return BadRequest(new { status = "validation failed" });
             }
 
             var videos = _context.Favorite.Where(x => x.Usid == usid).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => y);
