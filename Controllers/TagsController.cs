@@ -155,6 +155,25 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok", data = result });
         }
 
+        // GET: api/Tags/name
+        [HttpGet("name")]
+        public async Task<IActionResult> GetTagName(int tag_id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+
+            var tag = await _context.Tag.FindAsync(tag_id);
+
+            if (tag == null)
+            {
+                return NotFound(new { status = "Not found!" });
+            }
+
+            return Ok(new { status = "ok", data = new { name = tag.Name } });
+        }
+
         // GET: api/Tags
         [HttpGet]
         public IEnumerable<Tag> GetTag()
@@ -199,24 +218,7 @@ namespace CatjiApi.Controllers
             });
             return Ok(new { status = "ok", data = result });
         }
-        // GET: api/Tags/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetTags([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
-            var tag = await _context.Tag.FindAsync(id);
-
-            if (tag == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(tag);
-        }
         // PUT: api/Tags/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTag([FromRoute] int id, [FromBody] Tag tag)
