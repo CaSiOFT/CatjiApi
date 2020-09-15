@@ -23,7 +23,7 @@ namespace CatjiApi.Controllers
         }
 
         [HttpGet("info")]
-        public IActionResult GetWatchInfo(int usid, int offset)
+        public async Task<IActionResult> GetWatchInfo(int usid, int offset)
         {
             if (!ModelState.IsValid)
             {
@@ -34,21 +34,49 @@ namespace CatjiApi.Controllers
 
             string baseUrl = Request.Scheme + "://" + Request.Host + "/";
 
+            bool isLogin = false;
+            int myid = -1;
+            List<int> FList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                FList = await _context.Follow.Where(x => x.Usid == myid).Select(x => x.FollowUsid).ToListAsync();
+            }
+
             var result = _context.Users.Join(videos, x => x.Usid, y => y.Usid, (x, y) => new
             {
                 watch_time = y.CreateTime.ToTimestamp(),
-                nickname = x.Nickname,
-                vid = y.V.Vid,
-                title = y.V.Title,
-                cover = baseUrl + "images/" + y.V.Cover,
-                description = y.V.Description,
-                path = baseUrl + "videos/" + y.V.Path,
-                create_time = y.V.CreateTime.ToTimestamp(),
-                time = y.V.Time,
-                like_num = y.V.LikeNum,
-                favorite_num = y.V.FavoriteNum,
-                watch_num = y.V.WatchNum,
-                is_banned = y.V.IsBanned
+                video = new
+                {
+                    vid = y.V.Vid,
+                    title = y.V.Title,
+                    cover = baseUrl + "images/" + y.V.Cover,
+                    description = y.V.Description,
+                    path = baseUrl + "videos/" + y.V.Path,
+                    create_time = y.V.CreateTime.ToTimestamp(),
+                    time = y.V.Time,
+                    like_num = y.V.LikeNum,
+                    favorite_num = y.V.FavoriteNum,
+                    watch_num = y.V.WatchNum,
+                    is_banned = y.V.IsBanned,
+                    up = new
+                    {
+                        usid = y.V.Us.Usid,
+                        name = y.V.Us.Nickname,
+                        desc = y.V.Us.Signature,
+                        follow_num = y.V.Us.FollowerNum,
+                        avatar = y.V.Us.Avatar,
+                        ifollow = FList.Contains(y.V.Us.Usid) ? 1 : 0
+                    }
+                }
             });
 
             return Ok(new { status = "ok", data = result });
