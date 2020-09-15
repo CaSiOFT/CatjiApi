@@ -371,6 +371,8 @@ namespace CatjiApi.Controllers
 
             string baseUrl = Request.Scheme + "://" + Request.Host + "/";
 
+            var followee_num = _context.Follow.Where(x => x.Usid == usid).Count();
+
             return Ok(new
             {
                 status = "ok",
@@ -381,8 +383,8 @@ namespace CatjiApi.Controllers
                     gender = users.Gender,
                     avatar = baseUrl + "images/" + (users.Avatar != null ? users.Avatar : "noface.png"),
                     signature = users.Signature,
-                    follower_num = users.FollowFollowUs.Count,
-                    followee_num = users.FollowUs.Count,
+                    follower_num = users.FollowerNum,
+                    followee_num,
                     upload_num = _context.Video.Where(x => x.Usid == users.Usid).Count(),
                     blogs_num = _context.Blog.Where(x => x.Usid == users.Usid).Count(),
                     birthday = Extensionmethods.ToTimestamp(users.Birthday),
