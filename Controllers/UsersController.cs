@@ -74,6 +74,26 @@ namespace CatjiApi.Controllers
                 ifollow = FollowList.Contains(x.Usid) ? 1 : 0
             });
 
+            if (isLogin)
+            {
+                try
+                {
+                    var v = await _context.Searchhistory.FirstOrDefaultAsync(x => x.Usid == myid && x.Content == keyword);
+                    if (v != null)
+                        _context.Searchhistory.Remove(v);
+                    v = new Searchhistory();
+                    v.CreateTime = DateTime.Now;
+                    v.Content = keyword;
+                    v.Usid = myid;
+                    _context.Searchhistory.Add(v);
+                    await _context.SaveChangesAsync();
+                }
+                catch
+                {
+                    return Ok(new { status = "Create history failed!", data = result });
+                }
+            }
+
             return Ok(new { status = "ok", data = result });
         }
 

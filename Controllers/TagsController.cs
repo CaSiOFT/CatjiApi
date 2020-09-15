@@ -220,6 +220,38 @@ namespace CatjiApi.Controllers
                 name = x.Name,
                 catid = x.CatId
             });
+
+            bool isLogin = false;
+            int myid = -1;
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                try
+                {
+                    var v = await _context.Searchhistory.FirstOrDefaultAsync(x => x.Usid == myid && x.Content == keyword);
+                    if (v != null)
+                        _context.Searchhistory.Remove(v);
+                    v = new Searchhistory();
+                    v.CreateTime = DateTime.Now;
+                    v.Content = keyword;
+                    v.Usid = myid;
+                    _context.Searchhistory.Add(v);
+                    await _context.SaveChangesAsync();
+                }
+                catch
+                {
+                    return Ok(new { status = "Create history failed!", data = result });
+                }
+            }
+
             return Ok(new { status = "ok", data = result });
         }
 

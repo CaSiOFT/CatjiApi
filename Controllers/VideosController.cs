@@ -446,7 +446,7 @@ namespace CatjiApi.Controllers
             }
             catch
             {
-                return NotFound(new { status = "Create History failed.", data = result });
+                return Ok(new { status = "Create History failed.", data = result });
             }
 
             //修改播放量
@@ -457,7 +457,7 @@ namespace CatjiApi.Controllers
             }
             catch
             {
-                return NotFound(new { status = "Modification Failed.", data = result });
+                return Ok(new { status = "Modification Failed.", data = result });
             }
 
             return Ok(new { status = "ok", data = result });
@@ -465,7 +465,7 @@ namespace CatjiApi.Controllers
 
         //Get:api/videos/search
         [HttpGet("search")]
-        public IActionResult Getvideosearch(int offset, string keyword)
+        public async Task<IActionResult> Getvideosearch(int offset, string keyword)
         {
             if (!ModelState.IsValid)
             {
@@ -490,6 +490,37 @@ namespace CatjiApi.Controllers
                 favorite_num = x.FavoriteNum,
                 share_num = 0
             });
+
+            bool isLogin = false;
+            int myid = -1;
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                try
+                {
+                    var v = await _context.Searchhistory.FirstOrDefaultAsync(x => x.Usid == myid && x.Content == keyword);
+                    if (v != null)
+                        _context.Searchhistory.Remove(v);
+                    v = new Searchhistory();
+                    v.CreateTime = DateTime.Now;
+                    v.Content = keyword;
+                    v.Usid = myid;
+                    _context.Searchhistory.Add(v);
+                    await _context.SaveChangesAsync();
+                }
+                catch
+                {
+                    return Ok(new { status = "Create history failed!", data = result });
+                }
+            }
 
             return Ok(new { status = "ok", data = result });
         }
