@@ -353,7 +353,8 @@ namespace CatjiApi.Controllers
                     signature = users.Signature,
                     follower_num = users.FollowerNum,
                     followee_num = users.FollowUs.Count,
-                    upload_num = users.Video.Count,
+                    upload_num = _context.Video.Where(x => x.Usid == users.Usid).Count(),
+                    blogs_num = _context.Blog.Where(x => x.Usid == users.Usid).Count(),
                     birthday = Extensionmethods.ToTimestamp(users.Birthday),
                     cat_id = users.CatId
                 }
