@@ -64,9 +64,9 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "关注的人不存在" });
             }
 
-            var FO = await  _context.Follow.FindAsync(usid, fusid);
+            var FO = await _context.Follow.FindAsync(usid, fusid);
 
-            if(FO!=null)
+            if (FO != null)
                 return BadRequest(new { status = "已经关注此人" });
 
             FO = new Follow();
@@ -157,6 +157,25 @@ namespace CatjiApi.Controllers
                 follower.Us = await _context.Users.FindAsync(follower.Usid);
             }
 
+            bool isLogin = false;
+            int myid = -1;
+            List<int> FollowList = new List<int>();
+            List<int> BlockList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                FollowList = await _context.Follow.Where(x => x.Usid == myid).Select(x => x.FollowUsid).ToListAsync();
+                BlockList = await _context.Block.Where(x => x.Usid == myid).Select(x => x.BlockUsid).ToListAsync();
+            }
+
             string baseUrl = Request.Scheme + "://" + Request.Host + "/";
 
             var result = followers.Select(x => new
@@ -165,7 +184,9 @@ namespace CatjiApi.Controllers
                 nickname = x.Us.Nickname,
                 signature = x.Us.Signature,
                 avatar = baseUrl + "images/" + x.Us.Avatar,
-                gender = x.Us.Gender
+                gender = x.Us.Gender,
+                ifollow = FollowList.Contains(x.Usid) ? 1 : 0,
+                iblock = BlockList.Contains(x.Usid) ? 1 : 0
             });
 
             return Ok(new { status = "ok", data = result });
@@ -186,6 +207,25 @@ namespace CatjiApi.Controllers
                 following.FollowUs = await _context.Users.FindAsync(following.FollowUsid);
             }
 
+            bool isLogin = false;
+            int myid = -1;
+            List<int> FollowList = new List<int>();
+            List<int> BlockList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                FollowList = await _context.Follow.Where(x => x.Usid == myid).Select(x => x.FollowUsid).ToListAsync();
+                BlockList = await _context.Block.Where(x => x.Usid == myid).Select(x => x.BlockUsid).ToListAsync();
+            }
+
             string baseUrl = Request.Scheme + "://" + Request.Host + "/";
 
             var result = followings.Select(x => new
@@ -194,7 +234,9 @@ namespace CatjiApi.Controllers
                 nickname = x.FollowUs.Nickname,
                 signature = x.FollowUs.Signature,
                 avatar = baseUrl + "images/" + x.FollowUs.Avatar,
-                gender = x.FollowUs.Gender
+                gender = x.FollowUs.Gender,
+                ifollow = FollowList.Contains(x.Usid) ? 1 : 0,
+                iblock = BlockList.Contains(x.Usid) ? 1 : 0
             });
 
             return Ok(new { status = "ok", data = result });
