@@ -157,12 +157,14 @@ namespace CatjiApi.Controllers
                 follower.Us = await _context.Users.FindAsync(follower.Usid);
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = followers.Select(x => new
             {
                 usid = x.Usid,
                 nickname = x.Us.Nickname,
                 signature = x.Us.Signature,
-                avatar = x.Us.Avatar,
+                avatar = baseUrl + "images/" + x.Us.Avatar,
                 gender = x.Us.Gender
             });
 
@@ -184,12 +186,14 @@ namespace CatjiApi.Controllers
                 following.FollowUs = await _context.Users.FindAsync(following.FollowUsid);
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = followings.Select(x => new
             {
                 usid = x.FollowUsid,
                 nickname = x.FollowUs.Nickname,
                 signature = x.FollowUs.Signature,
-                avatar = x.FollowUs.Avatar,
+                avatar = baseUrl + "images/" + x.FollowUs.Avatar,
                 gender = x.FollowUs.Gender
             });
 

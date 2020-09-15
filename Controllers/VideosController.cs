@@ -246,6 +246,8 @@ namespace CatjiApi.Controllers
                 LikeList = await _context.Likevideocomment.Where(x => x.Usid == myid).Select(x => x.Vcid).ToListAsync();
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = comments.Select(x => new
             {
                 vcid = x.Vcid,
@@ -254,7 +256,7 @@ namespace CatjiApi.Controllers
                 {
                     usid = x.Us.Usid,
                     name = x.Us.Nickname,
-                    avatar = x.Us.Avatar
+                    avatar = baseUrl + "images/" + x.Us.Avatar
                 },
                 like_num = x.LikeNum,
                 create_time = x.CreateTime.ToTimestamp(),
@@ -267,7 +269,7 @@ namespace CatjiApi.Controllers
                     {
                         usid = irv.Us.Usid,
                         name = irv.Us.Nickname,
-                        avatar = irv.Us.Avatar
+                        avatar = baseUrl + "images/" + irv.Us.Avatar
                     },
                     like_num = irv.LikeNum,
                     create_time = irv.CreateTime.ToTimestamp(),

@@ -76,13 +76,15 @@ namespace CatjiApi.Controllers
                 FavList = await _context.Favorite.Where(x => x.Usid == myid).Select(x => x.Vid).ToListAsync();
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = _context.Videotag.Where(x => x.TagId == tag_id).Skip(offset).Take(10).Join(_context.Video, x => x.Vid, y => y.Vid, (x, y) => new
             {
                 vid = y.Vid,
                 title = y.Title,
                 cover = y.Cover,
                 description = y.Description,
-                path = y.Path,
+                path = baseUrl + "videos/" + y.Path,
                 create_time = y.CreateTime.ToTimestamp(),
                 time = y.Time,
                 like_num = y.LikeNum,
@@ -134,6 +136,8 @@ namespace CatjiApi.Controllers
                 LikeList = await _context.Likeblog.Where(x => x.Usid == myid).Select(x => x.Bid).ToListAsync();
             }
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = blogs.Select(x => new
             {
                 bid = x.Bid,
@@ -143,7 +147,7 @@ namespace CatjiApi.Controllers
                 {
                     usid = x.Us.Usid,
                     name = x.Us.Nickname,
-                    avatar = x.Us.Avatar
+                    avatar = baseUrl + "images/" + x.Us.Avatar
                 },
                 transmit_num = x.TransmitNum,
                 comment_num = x.CommentNum,

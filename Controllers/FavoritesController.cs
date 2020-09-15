@@ -126,7 +126,7 @@ namespace CatjiApi.Controllers
                 title = y.Title,
                 cover = baseUrl + "images/" + y.Cover,
                 description = y.Description,
-                path = y.Path,
+                path = baseUrl + "videos/" + y.Path,
                 create_time = y.CreateTime.ToTimestamp(),
                 time = y.Time,
                 like_num = y.LikeNum,
