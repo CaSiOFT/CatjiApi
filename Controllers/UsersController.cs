@@ -381,7 +381,7 @@ namespace CatjiApi.Controllers
                     gender = users.Gender,
                     avatar = baseUrl + "images/" + (users.Avatar != null ? users.Avatar : "noface.png"),
                     signature = users.Signature,
-                    follower_num = users.FollowerNum,
+                    follower_num = users.FollowFollowUs.Count,
                     followee_num = users.FollowUs.Count,
                     upload_num = _context.Video.Where(x => x.Usid == users.Usid).Count(),
                     blogs_num = _context.Blog.Where(x => x.Usid == users.Usid).Count(),
