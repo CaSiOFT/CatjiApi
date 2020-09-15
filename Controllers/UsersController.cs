@@ -338,14 +338,24 @@ namespace CatjiApi.Controllers
                 return BadRequest(new { status = "invalid", data = ModelState });
             }
 
-            // var auth = await HttpContext.AuthenticateAsync();
-            // if (!auth.Succeeded)
-            // {
-            //     return BadRequest(new { status = "not login" });
-            // }
+            bool isLogin = false;
+            int myid = -1;
+            List<int> FollowList = new List<int>();
+            List<int> BlockList = new List<int>();
 
-            // int usid;
-            // bool bo1 = int.TryParse(auth.Principal.Identity.Name, out usid);
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                FollowList = await _context.Follow.Where(x => x.Usid == myid).Select(x => x.FollowUsid).ToListAsync();
+                BlockList = await _context.Block.Where(x => x.Usid == myid).Select(x => x.BlockUsid).ToListAsync();
+            }
 
             if (usid == null)
             {
@@ -376,7 +386,9 @@ namespace CatjiApi.Controllers
                     upload_num = _context.Video.Where(x => x.Usid == users.Usid).Count(),
                     blogs_num = _context.Blog.Where(x => x.Usid == users.Usid).Count(),
                     birthday = Extensionmethods.ToTimestamp(users.Birthday),
-                    cat_id = users.CatId
+                    cat_id = users.CatId,
+                    ifollow = FollowList.Contains((int)usid) ? 1 : 0,
+                    iblock = BlockList.Contains((int)usid) ? 1 : 0,
                 }
             });
         }
