@@ -235,8 +235,8 @@ namespace CatjiApi.Controllers
                 signature = x.FollowUs.Signature,
                 avatar = baseUrl + "images/" + x.FollowUs.Avatar,
                 gender = x.FollowUs.Gender,
-                ifollow = FollowList.Contains(x.Usid) ? 1 : 0,
-                iblock = BlockList.Contains(x.Usid) ? 1 : 0
+                ifollow = FollowList.Contains(x.FollowUsid) ? 1 : 0,
+                iblock = BlockList.Contains(x.FollowUsid) ? 1 : 0
             });
 
             return Ok(new { status = "ok", data = result });
