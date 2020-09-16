@@ -82,7 +82,7 @@ namespace CatjiApi.Controllers
             {
                 vid = y.Vid,
                 title = y.Title,
-                cover = y.Cover,
+                cover = baseUrl + "images/" + y.Cover,
                 description = y.Description,
                 path = baseUrl + "videos/" + y.Path,
                 create_time = y.CreateTime.ToTimestamp(),

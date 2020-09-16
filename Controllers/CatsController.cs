@@ -69,7 +69,7 @@ namespace CatjiApi.Controllers
             {
                 vid = y.Vid,
                 title = y.Title,
-                cover = y.Cover,
+                cover = baseUrl + "images/" + y.Cover,
                 description = y.Description,
                 path = baseUrl + "videos/" + y.Path,
                 create_time = y.CreateTime.ToTimestamp(),
@@ -166,12 +166,14 @@ namespace CatjiApi.Controllers
             if (c == null)
                 return NotFound(new { status = "猫咪不存在" });
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = new
             {
                 cat_id = cat_id,
                 name = c.Name,
                 description = c.Description,
-                banner = c.Banner,
+                banner = baseUrl + "images/" + c.Banner,
                 usid = c.Usid
             };
 
