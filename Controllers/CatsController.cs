@@ -29,6 +29,82 @@ namespace CatjiApi.Controllers
             return _context.Cat;
         }
 
+        [HttpPost("updateinfo")]
+        public async Task<IActionResult> updateinfo(IFormCollection paras)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { status = "invalid", data = ModelState });
+            }
+            var auth = await HttpContext.AuthenticateAsync();
+            if (!auth.Succeeded)
+            {
+                return NotFound(new { status = "not login" });
+            }
+
+            var claim = User.FindFirstValue("User");
+
+            if (!Int32.TryParse(claim, out var loginUsid))
+            {
+                return BadRequest(new { status = "validation failed" });
+            }
+
+            var user = await _context.Users.FindAsync(loginUsid);
+
+            if (user == null)
+            {
+                return BadRequest(new { status = "No user!" });
+            }
+
+            if (user.CatId == null)
+                return BadRequest(new { status = "Not cat user!" });
+
+            var cat = await _context.Cat.FindAsync(user.CatId);
+
+            if (cat == null)
+                return NotFound(new { status = "Not found that catid" });
+
+            if (paras.TryGetValue("name", out var name) && name != cat.Name)
+            {
+                var temp_u = _context.Cat.Where(x => x.Name == name);
+
+                if (temp_u.Count() != 0)
+                {
+                    return BadRequest(new { status = "The name is already taken" });
+                }
+
+                cat.Name = name;
+            }
+
+            if (paras.TryGetValue("desc", out var desc) && desc != cat.Description)
+            {
+                cat.Description = desc;
+            }
+
+            IFormFile avatarFile = paras.Files.GetFile("banner");
+            if (avatarFile != null)
+            {
+                string avatarFileName = Guid.NewGuid().ToString() + '.' + avatarFile.FileName.Split('.').Last();
+                string pathToSave = "wwwroot/images" + "/" + avatarFileName;
+                using (var stream = System.IO.File.Create(pathToSave))
+                {
+                    await avatarFile.CopyToAsync(stream);
+                }
+                cat.Banner = avatarFileName;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                return NotFound(new { status = "Save failed.", data = e.ToString() });
+            }
+
+            return Ok(new { status = "ok" });
+        }
+
         [HttpGet("videos")]
         public async Task<IActionResult> GetVideo(int cat_id, int offset)
         {

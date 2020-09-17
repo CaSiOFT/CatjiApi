@@ -505,7 +505,7 @@ namespace CatjiApi.Controllers
             {
                 if (!Int32.TryParse(paramCatId, out var cat_id))
                 {
-                    return BadRequest(new { status = "Birthday format incorrect" });
+                    return BadRequest(new { status = "Catid incorrect" });
                 }
 
                 var temp_u = _context.Users.Where(x => x.CatId == cat_id);
