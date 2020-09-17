@@ -105,6 +105,21 @@ namespace CatjiApi.Controllers
             return Ok(new { status = "ok" });
         }
 
+        [HttpGet("search")]
+        public IActionResult searchCat(string name)
+        {
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+            var result = _context.Cat.Where(x => x.Name.Contains(name)).Select(x => new
+            {
+                cat_id = x.CatId,
+                banner = baseUrl + "images/" + x.Banner,
+                desc = x.Description,
+                name = x.Name,
+                usid = x.Usid
+            }).ToList();
+            return Ok(new { status = "ok", data = result });
+        }
+
         [HttpGet("videos")]
         public async Task<IActionResult> GetVideo(int cat_id, int offset)
         {

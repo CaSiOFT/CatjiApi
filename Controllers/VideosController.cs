@@ -137,13 +137,26 @@ namespace CatjiApi.Controllers
                 foreach (var v in paras["catags"])
                 {
                     var tag = await _context.Tag.FirstOrDefaultAsync(x => x.Name == v);
-                    if (tag != null && tag.CatId != null)
+
+                    if (tag == null)
                     {
-                        var vt = new Videotag();
-                        vt.TagId = tag.TagId;
-                        vt.Vid = videoPO.Vid;
-                        await _context.Videotag.AddAsync(vt);
+                        tag = new Tag();
+                        tag.Name = v;
+                        await _context.Tag.AddAsync(tag);
                     }
+
+                    if (tag.CatId == null)
+                    {
+                        var ncat = new Cat();
+                        ncat.Name = v;
+                        await _context.Cat.AddAsync(ncat);
+                        tag.CatId = ncat.CatId;
+                    }
+
+                    var vt = new Videotag();
+                    vt.TagId = tag.TagId;
+                    vt.Vid = videoPO.Vid;
+                    await _context.Videotag.AddAsync(vt);
                 }
                 await _context.SaveChangesAsync();
             }

@@ -389,6 +389,14 @@ namespace CatjiApi.Controllers
                     blogs_num = _context.Blog.Where(x => x.Usid == users.Usid).Count(),
                     birthday = Extensionmethods.ToTimestamp(users.Birthday),
                     cat_id = users.CatId,
+                    cat = _context.Cat.Where(x => x.CatId == users.CatId).Select(x => new
+                    {
+                        cat_id = x.CatId,
+                        banner = baseUrl + "images/" + x.Banner,
+                        desc = x.Description,
+                        name = x.Name,
+                        usid = x.Usid
+                    }).FirstOrDefault(),
                     ifollow = FollowList.Contains((int)usid) ? 1 : 0,
                     iblock = BlockList.Contains((int)usid) ? 1 : 0,
                 }
@@ -516,6 +524,7 @@ namespace CatjiApi.Controllers
                 }
 
                 user.CatId = cat_id;
+                _context.Cat.Find(cat_id).Usid = user.Usid;
             }
 
             try
