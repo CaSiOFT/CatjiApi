@@ -307,10 +307,12 @@ namespace CatjiApi.Controllers
             foreach (var v in rndList)
                 cat_top.Add(catList[v]);
 
+            string baseUrl = Request.Scheme + "://" + Request.Host + "/";
+
             var result = cat_top.Select(x => new
             {
                 cat_id = x.CatId,
-                banner = x.Banner,
+                banner = baseUrl + "images/" + x.Banner,
                 name = x.Name
             });
 
