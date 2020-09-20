@@ -90,11 +90,27 @@ namespace CatjiApi.Controllers
                 }
                 catch
                 {
-                    return Ok(new { status = "Create history failed!", data = result });
+                    return Ok(new
+                    {
+                        status = "Create history failed!",
+                        data = new
+                        {
+                            count = _context.Users.Where(x => (x.Signature.Contains(keyword) || x.Nickname.Contains(keyword)) && (x.CatId != null || !only_cat)).Count(),
+                            result
+                        }
+                    });
                 }
             }
 
-            return Ok(new { status = "ok", data = result });
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    count = _context.Users.Where(x => (x.Signature.Contains(keyword) || x.Nickname.Contains(keyword)) && (x.CatId != null || !only_cat)).Count(),
+                    result
+                }
+            });
         }
 
         // POST: /api/users/register 注册

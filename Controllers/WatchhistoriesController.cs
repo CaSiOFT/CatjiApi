@@ -79,7 +79,15 @@ namespace CatjiApi.Controllers
                 }
             });
 
-            return Ok(new { status = "ok", data = result });
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    count = _context.Watchhistory.Where(z => z.Usid == usid).Count(),
+                    result
+                }
+            });
         }
 
         // GET: api/Watchhistories

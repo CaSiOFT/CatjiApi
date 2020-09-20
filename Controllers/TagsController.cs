@@ -95,7 +95,15 @@ namespace CatjiApi.Controllers
                 ifavorite = FavList.Contains(x.Vid) ? 1 : 0
             });
 
-            return Ok(new { status = "ok", data = result });
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    count = _context.Videotag.Where(x => x.TagId == tag_id).Count(),
+                    result
+                }
+            });
         }
 
         [HttpGet("blogs")]
@@ -152,7 +160,7 @@ namespace CatjiApi.Controllers
                 transmit_num = x.TransmitNum,
                 comment_num = x.CommentNum,
                 like_num = x.LikeNum,
-                images = x.Blogimage.Select(y => y.ImgUrl),
+                images = x.Blogimage.Select(y => baseUrl + "images/" + y.ImgUrl),
                 ilike = LikeList.Contains(x.Bid) ? 1 : 0
             });
 

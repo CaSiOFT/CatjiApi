@@ -108,7 +108,7 @@ namespace CatjiApi.Controllers
         }
 
         [HttpGet("info")]
-        public IActionResult GetFavoriteInfo(int usid, int offset)
+        public async Task<IActionResult> GetFavoriteInfo(int usid, int offset)
         {
             if (!ModelState.IsValid)
             {
@@ -119,23 +119,60 @@ namespace CatjiApi.Controllers
 
             string baseUrl = Request.Scheme + "://" + Request.Host + "/";
 
+            bool isLogin = false;
+            int myid = -1;
+            List<int> FList = new List<int>();
+
+            var auth = await HttpContext.AuthenticateAsync();
+            if (auth.Succeeded)
+            {
+                var claim = User.FindFirstValue("User");
+                if (int.TryParse(claim, out myid))
+                    isLogin = true;
+            }
+
+            if (isLogin)
+            {
+                FList = await _context.Follow.Where(x => x.Usid == myid).Select(x => x.FollowUsid).ToListAsync();
+            }
+
             var result = _context.Users.Join(videos, x => x.Usid, y => y.Usid, (x, y) => new
             {
-                nickname = x.Nickname,
-                vid = y.Vid,
-                title = y.Title,
-                cover = baseUrl + "images/" + y.Cover,
-                description = y.Description,
-                path = baseUrl + "videos/" + y.Path,
-                create_time = y.CreateTime.ToTimestamp(),
-                time = y.Time,
-                like_num = y.LikeNum,
-                favorite_num = y.FavoriteNum,
-                watch_num = y.WatchNum,
-                is_banned = y.IsBanned
+                watch_time = y.CreateTime.ToTimestamp(),
+                video = new
+                {
+                    vid = y.Vid,
+                    title = y.Title,
+                    cover = baseUrl + "images/" + y.Cover,
+                    description = y.Description,
+                    path = baseUrl + "videos/" + y.Path,
+                    create_time = y.CreateTime.ToTimestamp(),
+                    time = y.Time,
+                    like_num = y.LikeNum,
+                    favorite_num = y.FavoriteNum,
+                    watch_num = y.WatchNum,
+                    is_banned = y.IsBanned,
+                    up = new
+                    {
+                        usid = y.Us.Usid,
+                        name = y.Us.Nickname,
+                        desc = y.Us.Signature,
+                        follow_num = y.Us.FollowerNum,
+                        avatar = y.Us.Avatar,
+                        ifollow = FList.Contains(y.Us.Usid) ? 1 : 0
+                    }
+                },
             });
 
-            return Ok(new { status = "ok", data = result });
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    count = _context.Favorite.Where(z => z.Usid == usid).Count(),
+                    result
+                }
+            });
         }
 
         // GET: api/Favorites

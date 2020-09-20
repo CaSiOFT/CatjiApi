@@ -197,7 +197,15 @@ namespace CatjiApi.Controllers
                 is_banned = x.IsBanned
             });
 
-            return Ok(new { status = "ok", data = result });
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    count = _context.Video.Where(z => z.Usid == usid).Count(),
+                    result
+                }
+            });
         }
 
         // 
@@ -290,7 +298,15 @@ namespace CatjiApi.Controllers
                 })
             });
 
-            return Ok(new { status = "ok", data = result });
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    count = _context.Videocomment.Where(vc => vc.Vid == vid).Count(),
+                    result
+                }
+            });
         }
 
         // GET: api/Videos/hotlist
@@ -535,7 +551,15 @@ namespace CatjiApi.Controllers
                 }
             }
 
-            return Ok(new { status = "ok", data = result });
+            return Ok(new
+            {
+                status = "ok",
+                data = new
+                {
+                    count = _context.Video.Where(x => x.Description.Contains(keyword) || x.Title.Contains(keyword)).Count(),
+                    result
+                }
+            });
         }
 
         // GET: api/Videos/5
